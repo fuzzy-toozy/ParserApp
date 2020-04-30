@@ -1781,11 +1781,10 @@ def login_page():
     if current_user.is_authenticated:
         return flask.redirect(flask.url_for("main_form"))
 
-    # POST: Create user and redirect them to the app
     if flask.request.method == 'POST':
         username = flask.request.form.get('username')
         password = flask.request.form.get('password')
-            # Validate Login Attempt
+
         user = User.query.filter_by(username=username).first()
         if user:
             if user.check_password(password=password):
@@ -1795,7 +1794,7 @@ def login_page():
 
         flask.flash('Invalid username/password combination')
         return flask.redirect(flask.url_for("login_page"))
-    # GET: Serve Log-in page
+
     return flask.render_template('login.html', form=LoginForm())
 
 
