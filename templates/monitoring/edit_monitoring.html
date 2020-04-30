@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block add_scripts %}
+<link rel="stylesheet" href="/static/styles/monitoring_mgmt.css">
+<link rel="stylesheet" href="/static/styles/edit_monitoring.css">
+<script src="/static/js/common.js"></script>
+<script src="/static/js/edit_monitoring_callbacks.js"></script>
+{% endblock %}
+{% block menu_entities %}
+    {% include 'menu_entities.html'  %}
+{% endblock %}
+{% block horizontal_pane %}
+    {% include 'horizontal_edit_pane.html' %}
+{% endblock %}
+{% block breadcrumbs %}
+    {% include 'breadcrumbs_list.html' %}
+{% endblock %}
+{% block page_content %}
+    <div>
+        <form id="monitoring_name" method="post" enctype="multipart/form-data">
+            <div style="float: left">
+                <div>
+                    <label id="file-parse-failure-msg" for="monitoring_name">Monitoring Name</label>
+                    <input id="monitoring_name_input" type="text" value="{{monitoring_name}}">
+                </div>
+            </div>
+        </form>
+    </div>
+    <div id="current_view" class="brdr">
+        <div class="tables_container">
+            <div class="table_container">
+                <table id="chosen_products_table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="chosen_products_table_body">
+                    {% for product in monitoring_products %}
+                        <tr id="product_tablerow_{{product[1].id}}" value="{{product[1].id}}">
+                            <td id="product_name{{loop.index-1}}">{{product[1].name}}</td>
+                            <td id="remove_product{{loop.index-1}}" class="remove_chosen"></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+                <div class="dropdown" style="text-align: left">
+                    <button id="product_list_chose" onclick="on_list_click('product_list_view')"
+                            class="dropbtn">Chose product to add</button>
+                    <div id="product_list_view" class="dropdown-content">
+                        {% for product in project_products %}
+                            <div id="product_{{product.id}}" name="product_{{loop.index}}"
+                                 onclick="on_list_element_click_dt('product', this, '{{product.id}}', '{{product.name}}')">{{product.name}}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="table_container">
+                <table id="chosen_sellers_table">
+                    <thead>
+                        <tr>
+                            <th>Seller</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                        <tbody id="chosen_sellers_table_body">
+                            {% for seller in monitoring_sellers %}
+                                <tr id="seller_tablerow_{{seller[1].id}}" value="{{seller[1].id}}">
+                                    <td id="seller_name{{loop.index-1}}">{{seller[1].name}}</td>
+                                    <td id="remove_seller{{loop.index-1}}" class="remove_chosen"></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                </table>
+
+                <div class="dropdown" style="text-align: left">
+                    <button id="seller_list_chose" onclick="on_list_click('seller_list_view')"
+                        class="dropbtn">Chose seller to add</button>
+                    <div id="seller_list_view" class="dropdown-content">
+                        {% for seller in project_sellers %}
+                            <div id="seller_{{seller.id}}" name="seller_{{loop.index}}"
+                                 onclick="on_list_element_click_dt('seller', this, '{{seller.id}}', '{{seller.name}}')">{{seller.name}}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="custom-select" style="width:200px; float: left;">
+                <label for="seller_self"><b>Seller Self:</b></label>
+                <select id="seller_self" class="dropbtn select_base">
+                    <option value="NONE" disabled selected>Seller Self:</option>
+                    {% for seller in project_sellers %}
+                        {% if seller.id == seller_self_id %}}
+                            <option selected value="{{seller.id}}">{{seller.name}}</option>
+                        {% else %}
+                            <option value="{{seller.id}}">{{seller.name}}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="custom-select" style="width:200px; float: left; margin-top:30px;">
+                <label for="update_interval"><b>Scan Interval:</b></label>
+                <select id="update_interval" class="dropbtn select_base">
+                    {% for value, description in scan_intervals.items() %}
+                        {% if value == enabled_scan_interval %}
+                        <option selected value="{{value}}">{{description}}</option>
+                        {% else %}
+                        <option value="{{value}}">{{description}}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="custom-select" style="width:200px; float: left; margin-top:30px;">
+                <label for="request_interval"><b>Request interval:</b></label>
+                <select id="request_interval" class="dropbtn select_base">
+                    {% for value, description in request_intervals.items() %}
+                        {% if value == enabled_request_interval %}
+                        <option selected value="{{value}}">{{description}}</option>
+                        {% else %}
+                        <option value="{{value}}">{{description}}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="float: left; margin-top:30px;">
+                <label for="monitoring_enabled_input"><b>Enabled:</b></label>
+                <label id="enabled_switch" class="switch">
+                    <input id="monitoring_enabled_input" type="checkbox"
+                           {% if monitoring_enabled %}
+                           checked
+                           {% endif %}
+                    >
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+{% endblock %}

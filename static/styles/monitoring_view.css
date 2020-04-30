@@ -1,0 +1,27 @@
+td.details-control {
+    background: url('/static/images/details_open.png') no-repeat center center;
+    cursor: pointer;
+    width: 1%;
+}
+
+tr.shown td.details-control {
+    background: url('/static/images/details_close.png') no-repeat center center;
+    width: 1%;
+}
+
+table {
+ font-family: Georgia, serif;
+  border: 6px solid #24943A;
+  background-color: #D4EED1;
+  width: 100%;
+  text-align: center;
+}
+
+td {
+    background-color: #D4EED1;
+    border: 1px solid #24943A;
+}
+
+th {
+    border: 1px solid #24943A;
+}

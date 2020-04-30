@@ -1,0 +1,177 @@
+.center {
+  margin-left: 220px;
+  min-width: 1400px;
+  border: 3px solid green;
+  padding: 10px;
+  overflow: hidden;
+}
+
+[class*="btn-"] {
+  border: 2px solid black;
+  background-color: white;
+  color: black;
+  padding: 14px 28px;
+  font-size: 12px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.side-menu {
+  height: 100%; /* Full-height: remove this if you want "auto" height */
+  min-width: 200px; /* Set the width of the sidebar */
+  width: 10%;
+  position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+  z-index: 1; /* Stay on top */
+  top: 0; /* Stay at the top */
+  left: 0;
+  overflow-x: hidden; /* Disable horizontal scroll */
+}
+
+.menu-cont {
+    margin-top: 1%;
+    width: 15%;
+    float: left;
+}
+
+tfoot input {
+        width: 100%;
+        padding: 3px;
+        box-sizing: border-box;
+    }
+
+.brdr {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1%;
+    display: table;
+    width: 100%;
+}
+
+.btn-vertical {
+    display: inline;
+}
+
+.btn-horizontal {
+    width: 15%;
+}
+
+.details-control {
+    background: url("/static/images/gachi/ashamed.jpeg");
+    background-size:     cover;                      /* <------ */
+    background-repeat:   no-repeat;
+    background-position: center center;
+}
+
+[class*="button-grp-vertical"] {
+    width: 100%;
+}
+
+.button-grp-vertical-top {
+    top: 0;
+}
+
+.button-grp-vertical-bot {
+    position: absolute;
+    bottom: 1%;
+}
+
+.button-grp-horizontal {
+    width: 100%;
+    display: table;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: auto;
+    margin-bottom: 1%;
+    border: 2px solid black;
+}
+
+ul.breadcrumb {
+  padding: 10px 16px;
+  list-style: none;
+  background-color: #eee;
+}
+
+ul.breadcrumb li {
+  display: inline;
+  font-size: 14px;
+}
+
+ul.breadcrumb li+li:before {
+  padding: 8px;
+  color: black;
+  content: "/\00a0";
+}
+
+ul.breadcrumb li a {
+  color: #0275d8;
+  text-decoration: none;
+  outline : none;
+}
+
+ul.breadcrumb li a:hover {
+  color: #01447e;
+  text-decoration: none;
+}
+
+.left {
+    float: left;
+}
+
+.right {
+    float: right;
+}
+
+/* Green */
+.success {
+  border-color: #4CAF50;
+  color: green;
+}
+
+.success:hover {
+  background-color: #4CAF50;
+  color: white;
+}
+
+/* Blue */
+.info {
+  border-color: #2196F3;
+  color: dodgerblue
+}
+
+.info:hover {
+  background: #2196F3;
+  color: white;
+}
+
+/* Orange */
+.warning {
+  border-color: #ff9800;
+  color: orange;
+}
+
+.warning:hover {
+  background: #ff9800;
+  color: white;
+}
+
+/* Red */
+.danger {
+  border-color: #f44336;
+  color: red
+}
+
+.danger:hover {
+  background: #f44336;
+  color: white;
+}
+
+/* Gray */
+.default {
+  border-color: #e7e7e7;
+  color: black;
+}
+
+.default:hover {
+  background: #e7e7e7;
+}

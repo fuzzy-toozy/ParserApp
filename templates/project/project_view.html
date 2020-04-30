@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block menu_entities %}
+    {% include 'menu_entities.html'  %}
+{% endblock %}
+{% block horizontal_pane %}
+    <div class="button-grp-horizontal">
+        <p class="left">{{ current_user }}</p>
+        <div id="head_buttons_view" class="right" style="width: 50%">
+            <button id="project_settings" name="{{ project_id  }}"
+                    class="btn-horizontal default right"
+                    onclick="window.location.href = '{{ url_for('project_settings', project_id=project_id)}}';"
+            >Settings</button>
+        </div>
+    </div>
+{% endblock %}
+{% block breadcrumbs %}
+    {% include 'breadcrumbs_list.html' %}
+{% endblock %}
+{% block page_content %}
+{% endblock %}

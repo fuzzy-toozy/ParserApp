@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block add_scripts %}
+<link rel="stylesheet" href="/static/styles/highlight_default.css">
+<script src="/static/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script src="/static/js/common.js"></script>
+<script src="/static/js/parser_callbacks.js"></script>
+{% endblock %}
+{% block menu_entities %}
+    {% include 'menu_entities.html'  %}
+{% endblock %}
+{% block horizontal_pane %}
+    <div class="button-grp-horizontal">
+        <p class="left">{{ current_user }}</p>
+        <div id="head_buttons_view" class="right" style="width: 50%">
+            <button id="save_entity" onclick="save_parser_data('{{save_entity_url}}','{{entity_view_url}}')" class="btn-horizontal default right">Save</button>
+            <button id="cancell" class="btn-horizontal default right" onclick="window.location.href = '{{ entity_view_url }}';">Cancel</button>
+            {% if entity_id != 'new_entity' %}
+            <button id="test_parser" class="btn-horizontal default right" onclick="window.location.href = '{{ test_parser_url }}';">Test Parser</button>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+{% block breadcrumbs %}
+    {% include 'breadcrumbs_list.html' %}
+{% endblock %}
+{% block page_content %}
+    <div id="current_view" class="brdr">
+        <form id="upload-parser" method="post" enctype="multipart/form-data">
+            <div>
+                <div>
+                    <input id="parser-name-input" type="text" value="{{parser_name}}">
+                    <button onclick="click_upload_btn()" id="upload-parser-btn" type="button">Chose file</button>
+                    <input onchange="input_form_change(this)" id="parser-file-input" name="parser-file" type="file" style="display: none">
+                    <div style="margin-top: 30px;" id="file-parse-failure-msg"></div>
+                </div>
+            </div>
+        </form>
+        <div id="snippet" style="text-align: left">
+            <pre>
+                <code id="current_parser_code">
+{{parser_code}}
+                </code>
+            </pre>
+        </div>
+    </div>
+{% endblock %}

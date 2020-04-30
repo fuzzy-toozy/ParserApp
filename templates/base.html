@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
+    <head>
+        <script src="/static/libs/jquery-3.4.1.min.js"></script>
+        <script src="/static/libs/jquery.dataTables.min.js"></script>
+        <script src="/static/js/ajtst.js"></script>
+        {% block add_scripts %}
+        {% endblock %}
+        <link rel="stylesheet" type="text/css" href="/static/styles/buttons.css">
+        <link rel="stylesheet" type="text/css" href="/static/styles/jquery.dataTables.min.css">
+        <meta charset="utf-8">
+        <title>FISTING IS 300$</title>
+    </head>
+    <body>
+
+        <div class="side-menu">
+            <div class="button-grp-vertical-top">
+                <button id="lolkek1488" class="btn-vertical default"
+                        onclick="window.location.href = '{{ url_for('main_form') }}';">Projects</button>
+            {% block menu_entities %}
+            {% endblock %}
+            </div>
+            <div class="button-grp-vertical-bot">
+                <button class="btn-vertical default">Settings</button>
+                <button class="btn-vertical default" onclick="window.location.href = '{{ url_for('logout_page') }}';">Exit</button>
+            </div>
+        </div>
+
+        <div class="center">
+            {% block horizontal_pane %}
+            {% endblock %}
+            {% block breadcrumbs %}
+            {% endblock %}
+            {% block page_content %}
+            {% endblock %}
+        </div>
+    </body>
+</html>
+

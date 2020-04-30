@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block add_scripts %}
+<link rel="stylesheet" href="/static/styles/highlight_default.css">
+<script src="/static/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script src="/static/js/common.js"></script>
+{% endblock %}
+{% block menu_entities %}
+    {% include 'menu_entities.html'  %}
+{% endblock %}
+{% block page_content %}
+        <div class="button-grp-horizontal">
+            <p class="left">{{ current_user }}</p>
+        </div>
+        <div>
+{{label_message}}
+            <div>
+                <pre>
+                    <code>
+{{parser_result}}
+                    </code>
+                </pre>
+            </div>
+        </div>
+        <div id="snippet" style="text-align: left">
+            <pre>
+                <code id="current_parser_code">
+{{parser_code}}
+                </code>
+            </pre>
+        </div>
+{% endblock %}

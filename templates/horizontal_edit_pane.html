@@ -1,0 +1,8 @@
+<div class="button-grp-horizontal">
+    <p class="left">{{ current_user }}</p>
+    <div id="head_buttons_view" class="right" style="width: 50%">
+        <button id="save_entity" class="btn-horizontal default right"
+                onclick="save_monitoring_data('{{save_url}}', '{{redirect_url}}', '{{project_id}}', '{{entity_id}}')">Save</button>
+        <button id="cancel" onclick="window.location.href = '{{ redirect_url }}';" class="btn-horizontal default right">Cancel</button>
+    </div>
+</div>

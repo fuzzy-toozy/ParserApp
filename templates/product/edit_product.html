@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block add_scripts %}
+<script src="/static/js/product_table_callbacks.js"></script>
+{% endblock %}
+{% block menu_entities %}
+    {% include 'menu_entities.html'  %}
+{% endblock %}
+{% block horizontal_pane %}
+    <div class="button-grp-horizontal">
+        <p class="left">{{ current_user }}</p>
+        <div id="head_buttons_view" class="right" style="width: 50%">
+            <button id="save_product_settings" class="btn-horizontal default right"
+                    name="{{project_id}}"
+                    onclick="save_current_product('{{project_id}}', '{{product_id}}')"
+            >Save</button>
+            <button id="cancel" class="btn-horizontal default right"
+                    onclick="save_current_product('{{project_id}}', '{{product_id}}')"
+            >Cancel</button>
+        </div>
+    </div>
+{% endblock %}
+{% block breadcrumbs %}
+    {% include 'breadcrumbs_list.html' %}
+{% endblock %}
+{% block page_content %}
+<div id="product_name_div" align='center' border=1>
+    <span>Product Name:</span>
+    <span id="product_name" value="{{product_name}}">{{ product_name }}</span>
+    <span>
+        <input id="prodname_edit_button"
+               type="button" class="add"
+               onclick="edit_product_name();" value="Edit"
+        >
+        <input id="prodname_save_button" type="button"
+               value="Save" onclick="save_product_name();"
+               style="display: none"
+        >
+    </span>
+</div>
+<table id="options_data_table" align='center' cellspacing=2 cellpadding=5 border=1>
+    <thead>
+        <tr>
+            <th>Option</th>
+            <th>Option Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% set trow_idx = 1 %}
+        {% for option in product_options %}
+        <tr id="option_table_row{{loop.index}}" value="{{option.id}}">
+            <td id="option_name_row{{loop.index}}" value="{{option.name}}">{{ option.name }}</td>
+            <td><input type="button" id="option_edit_button{{loop.index}}"
+                       value="Edit" class="edit" onclick="edit_row({{loop.index}})">
+                <input type='button' id="option_save_button{{loop.index}}"
+                       value="Save" class="save" onclick="save_row({{loop.index}})"
+                       style="display: none">
+                <input type='button' value='Delete'
+                       class='delete' onclick='delete_row({{loop.index}})'></td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td><input type="text" id="option_new_name"></td>
+            <td><input type="button" class="add" onclick="add_row();" value="Add Option"></td>
+        </tr>
+    </tbody>
+</table>
+{% endblock %}

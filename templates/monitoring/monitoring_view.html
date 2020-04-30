@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block add_scripts %}
+<script src="/static/js/common.js"></script>
+<script src="/static/js/monitoring_view_callbacks.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/styles/monitoring_view.css">
+{% endblock %}
+{% block menu_entities %}
+    {% include 'menu_entities.html'  %}
+{% endblock %}
+{% block page_content %}
+    <div class="button-grp-horizontal">
+        <p class="left">{{ current_user }}</p>
+    </div>
+
+    {% if not monitored_products %}
+        NO ENTITIES CREATED
+    {% else %}
+        <table id="monitored_products" class="display" style="width:100%">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Product</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for pid, product_array in monitored_products.items() %}
+                <tr>
+                    <td class="details-control" id="product{{product_array[0].product_id}}",
+                        value="{{product_array[0].product_id}}"
+                        onclick="on_expand_product(this,'monitored_products', 'product_sellers' +
+                        {{pid}}, '{{url_for('sellers_table_data', project_id=project_id, monitoring_id=monitoring_id, product_id=pid)}}')"></td>
+                    <td>{{ product_array[0].product_name }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th></th>
+                    <th>Product</th>
+                </tr>
+            </tfoot>
+        </table>
+    {% endif %}
+{% endblock %}

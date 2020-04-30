@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block add_scripts %}
+<script src="/static/js/common.js"></script>
+<script src="/static/js/monitoring_view_callbacks.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/styles/monitoring_view.css">
+{% endblock %}
+{% block menu_entities %}
+    {% include 'menu_entities.html'  %}
+{% endblock %}
+{% block horizontal_pane %}
+    <div class="button-grp-horizontal">
+        <p class="left">{{ current_user }}</p>
+    </div>
+{% endblock %}
+{% block breadcrumbs %}
+    {% include 'breadcrumbs_list.html' %}
+{% endblock %}
+{% block page_content %}
+
+    {% if not monitoring_products %}
+        NO ENTITIES CREATED
+    {% else %}
+        <table id="monitored_products" class="display" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    {% if seller_self_id %}
+                    <th>Seller Self</th>
+                    {% endif %}
+                    {% for _, seller in monitoring_sellers %}
+                    <th>{{ seller.name }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+            {% set redirect_url = url_for(request.endpoint, project_id=project_id, monitoring_id=monitoring_id)%}
+            {% for _, product in monitoring_products %}
+                <tr>
+                    <td>{{ product.name }}</td>
+                    {% if seller_self_id %}
+                    <td>
+                        {% set self_object_defined = pids_to_sids.get(product.id) and seller_self_id in pids_to_sids.get(product.id) %}
+                        <button id="setup_seller_self{{product.id}}"
+                                 onclick="window.location.href =
+                                 '{{ url_for('edit_monitoring_object', project_id=project_id, monitoring_id=monitoring_id, product_id=product.id, seller_id=seller_self_id) }}';">
+                        {% if self_object_defined %}
+                            Edit
+                        {% else %}
+                            Create
+                        {% endif %}
+                    </button>
+                        {% if self_object_defined  %}
+                        <button id="remove_seller_self{{seller_self_id}}"
+                                 onclick="remove_mon_object({{project_id}},{{monitoring_id}},{{seller_self_id}}, {{product.id}}, '{{product.name}}', 'self', '{{remove_url}}', '{{redirect_url}}')">
+                            Delete
+                        </button>
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                    {% for _, seller in monitoring_sellers %}
+                    <td>
+                        {% set object_defined = pids_to_sids.get(product.id) and seller.id in pids_to_sids.get(product.id) %}
+                        <button id="setup_seller{{seller.id}}"
+                                 onclick="window.location.href =
+                                 '{{ url_for('edit_monitoring_object', project_id=project_id, monitoring_id=monitoring_id, product_id=product.id, seller_id=seller.id) }}';">
+                         {% if object_defined  %}
+                            Edit
+                        {% else %}
+                            Create
+                        {% endif %}
+                        </button>
+                        {% if object_defined  %}
+                        <button id="remove_seller{{seller.id}}"
+                                 onclick="remove_mon_object({{project_id}},{{monitoring_id}},{{seller.id}},{{product.id}}, '{{product.name}}', '{{seller.name}}', '{{remove_url}}', '{{redirect_url}}')">
+                            Delete
+                        </button>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+            {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th>Product</th>
+                    {% if seller_self_id %}
+                    <th>Seller Self</th>
+                    {% endif %}
+                    {% for _, seller in monitoring_sellers %}
+                    <th>{{ seller.name }}</th>
+                    {% endfor %}
+                </tr>
+            </tfoot>
+        </table>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,7 @@
+PROJECTS = "Projects"
+MODULES = "Modules"
+PRODUCTS = "Products"
+MONITORINGS = "Monitorings"
+SELLERS = "Sellers"
+PARSERS = "Parsers"
+REPORTS = "Reports"

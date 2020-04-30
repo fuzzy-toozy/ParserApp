@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block horizontal_pane %}
+    <div class="button-grp-horizontal">
+        <p class="left">{{ current_user }}</p>
+        <div id="head_buttons_view" class="right" style="width: 50%">
+            <button id="save_project" class="btn-horizontal default right">Save</button>
+            <button id="cancell" class="btn-horizontal default right" onclick="window.location.href = '{{ url_for('main_form') }}';">Cancel</button>
+        </div>
+    </div>
+{% endblock %}
+{% block breadcrumbs %}
+    {% include 'breadcrumbs_list.html' %}
+{% endblock %}
+{% block page_content %}
+    <div id="current_view" class="brdr">
+        <form id="project_name_form" method="POST" action="{{ url_for('create_project') }}">
+        {{ form.csrf_token }}
+        {{ form.name.label }}
+        {{ form.name }}
+        </form>
+    </div>
+{% endblock %}

@@ -1,0 +1,19 @@
+.common_margin {
+    margin-bottom: 1%;
+}
+
+.textbox {
+  border: 1px solid #24943A;
+  background-color: #D4EED1;
+  text-align: center;
+  width: 60em;
+}
+
+.urlbox {
+    width: 72em;
+}
+
+.select_base {
+    width: 200px;
+    margin-top: 2%;
+}

@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block add_scripts %}
+<script src="/static/js/common.js"></script>
+{% endblock %}
+{% block menu_entities %}
+    {% include 'menu_entities.html'  %}
+{% endblock %}
+{% block horizontal_pane %}
+    {% include 'horizontal_create_plane.html' %}
+{% endblock %}
+{% block breadcrumbs %}
+    {% include 'breadcrumbs_list.html' %}
+{% endblock %}
+{% block page_content %}
+    {% include 'monitoring/monitorings_table_view.html' %}
+{% endblock %}

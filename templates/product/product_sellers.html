@@ -1,0 +1,21 @@
+<div id="product_content{{product_id}}" style="width:50%">
+    <div><label>Seller Self: {{seller_self}}</label> <button>Settings</button></div>
+        <table id="product_sellers{{product_id}}" class="display">
+        <thead>
+            <tr>
+                <th>Seller</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for product in products_array %}
+            <tr>
+                <td>{{product.seller_name}}</td>
+                <td>
+                    <button>Settings</button>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,7 @@
+    <div class="button-grp-horizontal">
+        <p class="left">{{ current_user }}</p>
+        <div id="head_buttons_view" class="right" style="width: 50%">
+            <button id="save_entity" onclick="submit_form(document.getElementById('save_entity_form'))" class="btn-horizontal default right">Save</button>
+            <button id="cancell" class="btn-horizontal default right" onclick="window.location.href = '{{ entity_view_url }}';">Cancel</button>
+        </div>
+    </div>

@@ -1,0 +1,35 @@
+<div id="current_view" class="brdr">
+        {% if not entities %}
+            NO ENTITIES CREATED
+        {% else %}
+            <table id="example" class="display" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for entity in entities %}
+            <tr>
+                <td>{{ entity.name }}</td>
+                <td>
+                    <button id="entity_edit" name="{{ entity.id  }}"
+                            onclick="window.location.href = '{{ url_for(edit_entity, project_id=project_id, entity_id=entity.id) }}';"
+                    >Settings</button>
+                    <button id="seller_remove"
+                            onclick = "remove_entity({{ project_id }}, '{{ common_name }}', {{ entity.id }}, '{{ entity.name }}', '{{ delete_entity_url }}', '{{ entity_view_url }}' )"
+                            name="{{ entity.id  }}">Delete</button>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th>Name</th>
+                    <th>Actions</th>
+                </tr>
+            </tfoot>
+            </table>
+    {% endif %}
+</div>

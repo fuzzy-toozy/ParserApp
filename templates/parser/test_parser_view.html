@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block add_scripts %}
+<link rel="stylesheet" href="/static/styles/highlight_default.css">
+<script src="/static/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script src="/static/js/common.js"></script>
+<script src="/static/js/test_parser.js"></script>
+{% endblock %}
+{% block menu_entities %}
+    {% include 'menu_entities.html'  %}
+{% endblock %}
+{% block page_content %}
+<div class="button-grp-horizontal">
+    <p class="left">{{ current_user }}</p>
+    <button class="btn-horizontal default right"
+            onclick="submit_form_check_js(document.getElementById('parser_url_form'))"
+            id="submit-parser-url"
+            type="button">Run Test</button>
+</div>
+
+<div id="test_parser_data" style="margin-bottom: 30px;">
+    <form id="parser_url_form" method="post" action="{{ submit_url }}">
+        <label id="url-parser" for="url-for-parser"><b>URL:</b></label>
+        <input id="url-for-parser" name="parser_url" type="text" value="" style="width: 100%">
+        <label for="parser_parameter"><b>Parameter:</b></label>
+        <textarea name="parser_parameter" style="display: block" cols="100" rows="5" id="parser_parameter"></textarea>
+    </form>
+</div>
+
+
+<div id="snippet" style="text-align: left">
+<label id="parser-code-label" for="parser-code"><b>Code:</b></label>
+            <pre id="parser-code">
+                <code id="current_parser_code">
+{{parser_code}}
+                </code>
+            </pre>
+</div>
+{% endblock %}
