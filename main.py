@@ -12,4 +12,11 @@ from server.server import app, main_app
 main_app.init(abs_fpath)
 
 if __name__ == "__main__":
-    app.run()
+    try:
+        app.run(host='0.0.0.0')
+    except (KeyboardInterrupt, SystemExit):
+        print("Exiting FLASK...")
+    except Exception as ex:
+        print(ex)
+    finally:
+        main_app.finish()

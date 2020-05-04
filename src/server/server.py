@@ -10,7 +10,7 @@ from flask_login import LoginManager, login_required, logout_user, current_user,
 from flask_session import Session
 
 from collections import OrderedDict
-
+from multiprocessing import Process, Queue
 from datetime import timedelta
 
 from common import parsing
@@ -21,7 +21,7 @@ from database.models import *
 from common.forms import LoginForm, ProjectForm, SellerForm, ParserForm
 from common.settings import SECRET_KEY, PARSERS_DIR
 
-from common.scanning import MonitoringScanner, ScanningResult
+from common.scanning import MonitoringScanner, ScanningResult, ScanProcessor
 
 app = Flask(__name__, root_path="/home/fuzzy/shit/gledos/gachi_parser/")
 login_manager = LoginManager()
@@ -189,6 +189,7 @@ class ServerApp:
         self.root_dir = None
         self.db = None
         self.session = Session()
+        self.scan_processor = ScanProcessor()
 
     def init(self, root_dir):
         self.flask_app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -201,9 +202,23 @@ class ServerApp:
         self.session.init_app(self.flask_app)
         self.login_manager.init_app(self.flask_app)
         self.init_db()
+        self.run_scan_workers()
 
     def run(self):
         self.flask_app.run()
+
+    def finish(self):
+        self.scan_processor.stop_scan_workers()
+
+    def run_scan_workers(self):
+        if not self.scan_processor.is_initialised():
+            with app.app_context():
+                all_users = User.query.all()
+                users_set = set()
+                for user in all_users:
+                    users_set.add(user.username)
+                self.scan_processor.init_users(users_set)
+            self.scan_processor.run_scan()
 
     def init_db(self):
         self.flask_app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///%s/db_data/%s.db" % (self.root_dir, "main_app.db")
@@ -213,6 +228,12 @@ class ServerApp:
         with app.app_context():
             flask_db.create_all()
             create_admin()
+
+    def add_scan_object(self, project_id, monitoring_id, user):
+        self.scan_processor.add_scan_object(project_id, monitoring_id, user)
+
+    def get_scan_stats(self, user):
+        return self.scan_processor.get_stats(user)
 
     def create_db_tables(self, user):
         self.db_engine = sqlalchemy.create_engine("sqlite:///%s/db_data/%s.db" % (self.root_dir, user))
@@ -1174,18 +1195,23 @@ def force_scan(project_id, entity_id):
 
     return flask.jsonify(scan_results)
 
+def do_gay_stuff(pqueue):
+    result = ScanningResult.UNKNOWN
+    while True:
+        scaner = pqueue.get()         # Read from the queue and do nothing
+        print("init: %s" % str(scaner.init_scan_data()))
+        while result != ScanningResult.FINISHED:
+            print("AAAAAAAA\n")
+            result, msg = scaner.scan_product()
+        break
+
 
 @app.route("/force_scan_test/<project_id>/<entity_id>", methods=['GET'])
 @login_required
 def force_scan_test(project_id, entity_id):
-    scaner = MonitoringScanner(project_id, entity_id, current_user.username)
-    print("init: %s" % str(scaner.init_scan_data()))
-    result = None
-    while result != ScanningResult.FINISHED:
-        print("AAAAAAAA\n")
-        result, msg = scaner.scan_product()
-
-    return flask.jsonify(scaner.get_json_results())
+    main_app.add_scan_object(project_id, entity_id, current_user.username)
+    main_app.add_scan_object(project_id, 2, current_user.username)
+    return flask.jsonify(main_app.get_scan_stats(current_user.username))
 
 
 @app.route("/report_view/<project_id>/<entity_id>", methods=['GET'])
@@ -1774,6 +1800,9 @@ def getshit():
     }
   ]
 })
+
+
+
 
 
 @app.route('/', methods=['GET', 'POST'])

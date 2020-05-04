@@ -187,6 +187,7 @@ class ScanQueueObject(Base):
     project_id = Column(Integer, ForeignKey(Project.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
     monitoring_id = Column(Integer, ForeignKey(Monitoring.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
     monitored_product_id = Column(Integer, ForeignKey(MonitoredProduct.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
+    retries = Column(Integer, primary_key=False, default=0)
 
 
 class BaseScanResult(Base):
@@ -212,3 +213,13 @@ class OptionScanResult(Base):
     scan_result = Column(Text(), index=True, unique=False, nullable=True)
     scan_error = Column(Text(), index=False, unique=False, nullable=True)
     result_code = Column(Integer, index=True, unique=False, nullable=False)
+
+
+class ScanStat(Base):
+    __tablename__ = "Scan_stats"
+
+    id = Column(Integer, primary_key=True)
+    project_id = Column(Integer, ForeignKey(Project.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
+    monitoring_id = Column(Integer, ForeignKey(Monitoring.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
+    last_scan_status = Column(Integer, index=True, unique=False, nullable=False)
+    last_scan_errmsg = Column(Text(), index=False, unique=False, nullable=True)
