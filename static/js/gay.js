@@ -14,7 +14,7 @@ $.ajax({
 });
 }
 
-on_expand_product(table_id, data_id) {
+function on_expand_product(table_id, data_id) {
     var table = $("#" + table_id).DataTable();
     var tr = $(this).closest('tr');
     var row = table.row( tr );

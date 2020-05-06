@@ -898,9 +898,6 @@ def save_monitoring():
             for sid in sel_id_to_insert:
                 sellers.append(seller_idmap[sid])
         else:
-            if seller_self_obj:
-                sellers.append({'id': seller_self_obj.id})
-
             current_monitoring = Monitoring(name=monitoring_name,
                                         project_id=project_id,
                                         seller_self_id=seller_self,
@@ -944,7 +941,7 @@ def delete_monitoring():
 @app.route("/monitoring_view/<project_id>/<monitoring_id>", methods=['GET'])
 @login_required
 def monitoring_view(project_id, monitoring_id):
-    with session_scope(current_user.username) as session:
+    with session_scope(current_user.username, True) as session:
         monitored_products = session.query(MonitoredProduct).filter(and_(MonitoredProduct.monitoring_id == monitoring_id,
                                                                          MonitoredProduct.project_id == project_id)).all()
 
@@ -1034,7 +1031,7 @@ def format_parser_parameter(param_string):
 def get_option_data(option):
     option_id = int(option['option_id'])
     option_parser_id = option['parser_id']
-    option_parser_id = option_parser_id if option_parser_id != 'NONE' else None
+    option_parser_id = int(option_parser_id) if option_parser_id != 'NONE' else None
     option_parser_param = option['params']
     option_parser_param = format_parser_parameter(option_parser_param) if option_parser_param else None
 
@@ -1205,12 +1202,15 @@ def do_gay_stuff(pqueue):
             result, msg = scaner.scan_product()
         break
 
-
 @app.route("/force_scan_test/<project_id>/<entity_id>", methods=['GET'])
 @login_required
 def force_scan_test(project_id, entity_id):
     main_app.add_scan_object(project_id, entity_id, current_user.username)
-    main_app.add_scan_object(project_id, 2, current_user.username)
+    return flask.jsonify(main_app.get_scan_stats(current_user.username))
+
+@app.route("/scan_stats", methods=['GET'])
+@login_required
+def scan_stats():
     return flask.jsonify(main_app.get_scan_stats(current_user.username))
 
 
@@ -1263,14 +1263,14 @@ def reports_view(project_id):
 @app.route("/sellers_table_data/<project_id>/<monitoring_id>/<product_id>", methods=['GET'])
 @login_required
 def sellers_table_data(project_id, monitoring_id, product_id):
-    session, ssc = user_db_mgr.get_user_db_session(current_user.username)
-    current_monitoring = session.query(Monitoring).filter(Monitoring.id == monitoring_id).first()
-    monitored_products = session.query(MonitoredProduct).filter(and_(MonitoredProduct.monitoring_id == monitoring_id,
-                                                                     MonitoredProduct.project_id == project_id,
-                                                                     MonitoredProduct.product_id == product_id)).all()
+    with session_scope(current_user.username, True) as session:
+        current_monitoring = session.query(Monitoring).filter(Monitoring.id == monitoring_id).first()
+        monitored_products = session.query(MonitoredProduct).filter(and_(MonitoredProduct.monitoring_id == monitoring_id,
+                                                                        MonitoredProduct.project_id == project_id,
+                                                                        MonitoredProduct.product_id == product_id)).all()
 
-    return flask.render_template("seller/product_sellers.html",
-                                 seller_self=current_monitoring.seller_self_name,
+    return flask.render_template("product/product_sellers.html",
+                                 seller_self="GAY",
                                  product_id=product_id,
                                  products_array=monitored_products)
 

@@ -40,6 +40,7 @@
             <label for="select_base_parser"><b>Basic price parser:</b></label>
             <select class="select_base dropbtn" id="select_base_parser">
                 <option value="NONE" disabled selected>Select parser</option>
+                <option value="NONE">None</option>
                     {% for parser in project_parsers %}
                         <option {% if monitored_product and parser.id == monitored_product.parser_id %}
                                 selected="selected"
@@ -64,6 +65,7 @@
             <label for="select_option{{option.id}}"><b>Option '{{option.name}}' parser:</b></label>
             <select class="select_base dropbtn" id="select_option{{option.id}}" value="{{option.id}}">
                 <option value="NONE" disabled selected>Select parser</option>
+                <option value="NONE">None</option>
                     {% for parser in project_parsers %}
                         <option {% if option.id in options_id_to_data and options_id_to_data[option.id].parser_id == parser.id%}
                                 selected="selected"

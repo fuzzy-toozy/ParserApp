@@ -197,7 +197,7 @@ class BaseScanResult(Base):
     project_id = Column(Integer, ForeignKey(Project.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
     monitoring_id = Column(Integer, ForeignKey(Monitoring.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
     monitored_product_id = Column(Integer, ForeignKey(MonitoredProduct.id, ondelete="CASCADE"), index=True, unique=True, primary_key=False, nullable=False)
-    scan_result = Column(Text(), index=True, unique=False, nullable=True)
+    scan_result = Column(Text(), index=False, unique=False, nullable=True)
     scan_error = Column(Text(), index=False, unique=False, nullable=True)
     result_code = Column(Integer, index=True, unique=False, nullable=False)
 
@@ -210,7 +210,7 @@ class OptionScanResult(Base):
     option_id = Column(Integer, ForeignKey(MonitoredOption.id, ondelete="CASCADE"), index=True, unique=True, primary_key=False, nullable=False)
     monitoring_id = Column(Integer, ForeignKey(Monitoring.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
     monitored_product_id = Column(Integer, ForeignKey(MonitoredProduct.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
-    scan_result = Column(Text(), index=True, unique=False, nullable=True)
+    scan_result = Column(Text(), index=False, unique=False, nullable=True)
     scan_error = Column(Text(), index=False, unique=False, nullable=True)
     result_code = Column(Integer, index=True, unique=False, nullable=False)
 
