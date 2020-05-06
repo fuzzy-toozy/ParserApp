@@ -1,12 +1,12 @@
 <button id="products_menu" class="btn-vertical default" name="{{project_id}}"
-        onclick="window.location.href = '{{ url_for('products_view', project_id=project_id) }}';"
+        onclick="window.location.href = '{{ url_for('products.products_view', project_id=project_id) }}';"
 >Products</button>
 <button id="sellers_menu" class="btn-vertical default" name="{{project_id}}"
-        onclick="window.location.href = '{{ url_for('sellers_view', project_id=project_id) }}';"
+        onclick="window.location.href = '{{ url_for('sellers.sellers_view', project_id=project_id) }}';"
 >Sellers</button>
 <button id="parsers_menu" class="btn-vertical default" name="{{project_id}}"
-        onclick="window.location.href = '{{ url_for('parsers_view', project_id=project_id) }}';">Parsers</button>
+        onclick="window.location.href = '{{ url_for('parsers.parsers_view', project_id=project_id) }}';">Parsers</button>
 <button id="monitorings_menu" class="btn-vertical default" name="{{project_id}}"
-        onclick="window.location.href = '{{ url_for('monitorings_view', project_id=project_id) }}';">Monitorings</button>
+        onclick="window.location.href = '{{ url_for('monitorings.monitorings_view', project_id=project_id) }}';">Monitorings</button>
 <button id="reports_menu" class="btn-vertical default" name="{{project_id}}"
-        onclick="window.location.href = '{{ url_for('reports_view', project_id=project_id) }}';">Reports</button>
+        onclick="window.location.href = ''">Reports</button>

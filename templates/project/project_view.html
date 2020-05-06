@@ -8,7 +8,7 @@
         <div id="head_buttons_view" class="right" style="width: 50%">
             <button id="project_settings" name="{{ project_id  }}"
                     class="btn-horizontal default right"
-                    onclick="window.location.href = '{{ url_for('project_settings', project_id=project_id)}}';"
+                    onclick="window.location.href = '{{ url_for('projects.project_settings', project_id=project_id)}}';"
             >Settings</button>
         </div>
     </div>

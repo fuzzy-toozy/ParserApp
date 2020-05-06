@@ -42,7 +42,7 @@
                         {% set self_object_defined = pids_to_sids.get(product.id) and seller_self_id in pids_to_sids.get(product.id) %}
                         <button id="setup_seller_self{{product.id}}"
                                  onclick="window.location.href =
-                                 '{{ url_for('edit_monitoring_object', project_id=project_id, monitoring_id=monitoring_id, product_id=product.id, seller_id=seller_self_id) }}';">
+                                 '{{ url_for('monitorings.edit_monitoring_object', project_id=project_id, monitoring_id=monitoring_id, product_id=product.id, seller_id=seller_self_id) }}';">
                         {% if self_object_defined %}
                             Edit
                         {% else %}
@@ -62,7 +62,7 @@
                         {% set object_defined = pids_to_sids.get(product.id) and seller.id in pids_to_sids.get(product.id) %}
                         <button id="setup_seller{{seller.id}}"
                                  onclick="window.location.href =
-                                 '{{ url_for('edit_monitoring_object', project_id=project_id, monitoring_id=monitoring_id, product_id=product.id, seller_id=seller.id) }}';">
+                                 '{{ url_for('monitorings.edit_monitoring_object', project_id=project_id, monitoring_id=monitoring_id, product_id=product.id, seller_id=seller.id) }}';">
                          {% if object_defined  %}
                             Edit
                         {% else %}

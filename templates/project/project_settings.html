@@ -4,7 +4,7 @@
         <p class="left">{{ current_user }}</p>
         <div id="head_buttons_view" class="right" style="width: 50%">
             <button id="save_project_settings"  class="btn-horizontal default right">Save</button>
-            <button id="cancel" class="btn-horizontal default right" onclick="window.location.href = '{{ url_for('main_form') }}';">Cancel</button>
+            <button id="cancel" class="btn-horizontal default right" onclick="window.location.href = '{{ url_for('projects.main_form') }}';">Cancel</button>
         </div>
     </div>
 {% endblock %}
@@ -13,7 +13,7 @@
 {% endblock %}
 {% block page_content %}
     <div id="current_view" class="brdr">
-        <form id="project_settings_name_form" method="POST" action="{{ url_for('project_settings',project_id=project_id) }}">
+        <form id="project_settings_name_form" method="POST" action="{{ url_for('projects.project_settings',project_id=project_id) }}">
         {{ form.csrf_token }}
         {{ form.name.label }}
         {{ form.name }}

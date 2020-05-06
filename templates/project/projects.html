@@ -5,7 +5,7 @@
         <div id="head_buttons_view" class="right" style="width: 50%">
             <button id="create_proj"
                     class="btn-horizontal default right"
-                    onclick="window.location.href = '{{ url_for('create_project') }}';"
+                    onclick="window.location.href = '{{ url_for('projects.create_project') }}';"
             >Create project</button>
         </div>
     </div>
@@ -31,10 +31,10 @@
                 <td>{{ project.name }}</td>
                 <td>
                     <button id="project_view" name="{{ project.id  }}"
-                            onclick="window.location.href = '{{ url_for('project_view', project_id=project.id)}}';"
+                            onclick="window.location.href = '{{ url_for('projects.project_view', project_id=project.id)}}';"
                     >View</button>
                     <button id="project_settings" name="{{ project.id  }}"
-                            onclick="window.location.href = '{{ url_for('project_settings', project_id=project.id)}}';"
+                            onclick="window.location.href = '{{ url_for('projects.project_settings', project_id=project.id)}}';"
                     >Settings</button>
                     <button id="project_remove" onclick = "remove_project(this)" name="{{ project.id  }}">Delete</button>
                 </td>
