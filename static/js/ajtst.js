@@ -54,16 +54,20 @@ function remove_project(caller) {
 
 $(document).ready(function() {
     // Setup - add a text input to each footer cell
-    $('#example tfoot th').each( function () {
+    /*$('#example tfoot th').each( function () {
         var title = $(this).text();
-        $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
-    } );
+            $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+    } );*/
 
     // DataTable
-    var table = $('#example').DataTable();
+    var table = $('#example').DataTable({
+      "columns": [
+            null,
+            { "searchable": false },
+       ]});
 
     // Apply the search
-    table.columns().every( function () {
+    /*table.columns().every( function () {
         var that = this;
 
         $( 'input', this.footer() ).on( 'keyup change clear', function () {
@@ -73,5 +77,5 @@ $(document).ready(function() {
                     .draw();
             }
         } );
-    } );
+    } );*/
 } );

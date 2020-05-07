@@ -1,0 +1,12 @@
+<section class="content-header">
+    <nav aria-label="breadcrumb">
+    {% if bc_data %}
+      <ol class="breadcrumb">
+      {% for bc_element in bc_data[:-1] %}
+            <li><a href="{{bc_element[1]}}">{{bc_element[0]}}</a></li>
+      {% endfor %}
+      <li class="active">{{bc_data[-1][0]}}</li>
+      </ol>
+    {% endif %}
+    </nav>
+</section>

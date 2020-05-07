@@ -1,24 +1,26 @@
-{% extends 'base.html' %}
-{% block horizontal_pane %}
-    <div class="button-grp-horizontal">
-        <p class="left">{{ current_user }}</p>
-        <div id="head_buttons_view" class="right" style="width: 50%">
-            <button id="create_proj"
-                    class="btn-horizontal default right"
-                    onclick="window.location.href = '{{ url_for('projects.create_project') }}';"
-            >Create project</button>
-        </div>
-    </div>
+{% extends 'base_site.html' %}
+{% block title %}
+Projects View
+{% endblock title%}
+{% block stylesheets %}
+{% endblock stylesheets %}
+{% block navigation_bar %}
+    <li>
+        <a class="btn btn-app" href="{{ url_for('projects.create_project') }}"><i class="fa fa-object-group"></i>Create Project</a>
+    </li>
 {% endblock %}
 {% block breadcrumbs %}
-    {% include 'breadcrumbs_list.html' %}
+    {% include 'breadcrumb_list_new.html' %}
 {% endblock %}
-{% block page_content %}
-    <div id="current_view" class="brdr">
-        {% if not projects %}
-            NO PROJECTS CREATED
-        {% else %}
-            <table id="example" class="display" style="width:100%">
+{% block content %}
+<div class="row">
+<div class="col-xs-12">
+    <div class="box">
+        <div class="box-body">
+    {% if not projects %}
+        NO PROJECTS CREATED
+    {% else %}
+    <table id="example" class="table table-bordered table-striped text-center">
             <thead>
                 <tr>
                     <th>Name</th>
@@ -30,13 +32,13 @@
             <tr>
                 <td>{{ project.name }}</td>
                 <td>
-                    <button id="project_view" name="{{ project.id  }}"
+                    <a id="project_view" class="btn btn-app" name="{{ project.id  }}"
                             onclick="window.location.href = '{{ url_for('projects.project_view', project_id=project.id)}}';"
-                    >View</button>
-                    <button id="project_settings" name="{{ project.id  }}"
+                    ><i class="fa fa-eye"></i>View</a>
+                    <a id="project_settings" class="btn btn-app" name="{{ project.id  }}"
                             onclick="window.location.href = '{{ url_for('projects.project_settings', project_id=project.id)}}';"
-                    >Settings</button>
-                    <button id="project_remove" onclick = "remove_project(this)" name="{{ project.id  }}">Delete</button>
+                    ><i class="fa fa-cogs"></i>Settings</a>
+                    <a id="project_remove" class="btn btn-app" onclick = "remove_project(this)" name="{{ project.id  }}"><i class="fa fa-trash"></i>Delete</a>
                 </td>
             </tr>
             {% endfor %}
@@ -47,7 +49,13 @@
                     <th>Actions</th>
                 </tr>
             </tfoot>
-            </table>
-        {% endif %}
+    </table>
+    {% endif %}
+</div>
+</div>
+</div>
     </div>
+{% endblock %}
+
+{% block javascripts %}
 {% endblock %}

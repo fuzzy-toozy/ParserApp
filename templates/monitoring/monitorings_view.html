@@ -1,16 +1,18 @@
-{% extends 'base.html' %}
-{% block add_scripts %}
-<script src="/static/js/common.js"></script>
-{% endblock %}
-{% block menu_entities %}
-    {% include 'menu_entities.html'  %}
-{% endblock %}
-{% block horizontal_pane %}
-    {% include 'horizontal_create_plane.html' %}
+{% extends 'base_site.html' %}
+{% block title %}
+Monitorings View
+{% endblock title%}
+{% block navigation_bar %}
+    <li>
+        <a class="btn btn-app" href="{{ new_entity_url }}"><i class="fa fa-bar-chart"></i>Create Monitoring</a>
+    </li>
 {% endblock %}
 {% block breadcrumbs %}
-    {% include 'breadcrumbs_list.html' %}
+    {% include 'breadcrumb_list_new.html' %}
 {% endblock %}
-{% block page_content %}
+{% block content %}
     {% include 'monitoring/monitorings_table_view.html' %}
+{% endblock %}
+{% block javascripts %}
+    <script src="/static/js/common.js"></script>
 {% endblock %}

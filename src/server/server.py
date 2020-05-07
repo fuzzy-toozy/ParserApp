@@ -111,6 +111,12 @@ def set_session_timeout():
     app.permanent_session_lifetime = timedelta(minutes=60)
 
 
+@app.route("/kek", methods=['GET'])
+@login_required
+def kekapp():
+    return flask.render_template("base_site.html", current_user=current_user)
+
+
 @app.route("/check_ajax", methods=['POST'])
 def check():
     request_json = flask.request.get_json()
@@ -219,7 +225,7 @@ def scan_stats():
 @app.route('/', methods=['GET', 'POST'])
 def login_page():
     if current_user.is_authenticated:
-        return flask.redirect(flask.url_for("main_form"))
+        return flask.redirect(flask.url_for("projects.main_form"))
 
     if flask.request.method == 'POST':
         username = flask.request.form.get('username')
@@ -230,7 +236,7 @@ def login_page():
             if user.check_password(password=password):
                 user_db_mgr.create_user_db(username)
                 login_user(user)
-                return flask.redirect(flask.url_for("main_form"))
+                return flask.redirect(flask.url_for("projects.main_form"))
 
         flask.flash('Invalid username/password combination')
         return flask.redirect(flask.url_for("login_page"))

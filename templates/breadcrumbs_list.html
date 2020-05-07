@@ -1,8 +1,10 @@
+
 <ul id="breadcrumbs_list" class="breadcrumb">
     {% if bc_data %}
         {% for bc_element in bc_data[:-1] %}
             <li><a href="{{bc_element[1]}}">{{bc_element[0]}}</a></li>
         {% endfor %}
-        <li>{{bc_data[-1][0]}}</li>
+        <li class="active">{{bc_data[-1][0]}}</li>
     {% endif %}
 </ul>
+

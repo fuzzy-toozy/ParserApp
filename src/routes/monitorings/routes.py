@@ -125,7 +125,7 @@ def monitorings_view(project_id):
     edit_entity = 'monitorings.edit_monitoring'
 
     return flask.render_template("monitoring/monitorings_view.html",
-                                 current_user=current_user.username,
+                                 current_user=current_user,
                                  project_id=project_id,
                                  entities=current_monitorings,
                                  common_name="monitoring",
@@ -285,7 +285,7 @@ def monitoring_view(project_id, monitoring_id):
     print(view_products)
 
     return flask.render_template("monitoring/monitoring_view.html",
-                                 current_user=current_user.username,
+                                 current_user=current_user,
                                  project_id=project_id,
                                  monitoring_id=monitoring_id,
                                  monitored_products=view_products)

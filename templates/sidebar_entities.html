@@ -1,0 +1,25 @@
+<li>
+    <a id="products_menu" href="{{ url_for('products.products_view', project_id=project_id) }}">
+        <i class="fa fa-cart-plus"></i> <span>Products</span>
+    </a>
+</li>
+<li>
+    <a id="sellers_menu" href="{{ url_for('sellers.sellers_view', project_id=project_id) }}">
+        <i class="fa fa-user"></i> <span>Sellers</span>
+    </a>
+</li>
+<li>
+    <a id="parsers_menu" href="{{ url_for('parsers.parsers_view', project_id=project_id) }}">
+        <i class="fa fa-file-text-o"></i> <span>Parsers</span>
+    </a>
+</li>
+<li>
+    <a id="monitorings_menu" href="{{ url_for('monitorings.monitorings_view', project_id=project_id) }}">
+        <i class="fa fa-bar-chart"></i> <span>Monitorings</span>
+    </a>
+</li>
+<li>
+    <a id="reports_menu" href="">
+        <i class="fa fa-envelope"></i> <span>Reports</span>
+    </a>
+</li>

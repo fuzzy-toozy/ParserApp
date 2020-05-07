@@ -24,7 +24,7 @@ def main_form():
 
         if user_projects and len(user_projects) == 0:
             user_projects = None
-        ctx = {"current_user": current_user.username, "projects": user_projects, "bc_data": bc_data}
+        ctx = {"current_user": current_user, "projects": user_projects, "bc_data": bc_data}
         return flask.render_template("project/projects.html", **ctx)
 
 
@@ -46,7 +46,7 @@ def create_project():
 def project_settings(project_id):
     if flask.request.method == 'GET':
         bc_data = bc_generator.get_breadcrumbs_data(current_user.username, None, ENTS.EDIT_PROJECT)
-        return flask.render_template("project/project_settings.html", current_user=current_user.username,
+        return flask.render_template("project/project_settings.html", current_user=current_user,
                                      form=ProjectForm(), project_id=project_id, bc_data=bc_data)
     else:
         with session_scope(current_user.username) as session:
@@ -60,7 +60,7 @@ def project_settings(project_id):
 @login_required
 def project_view(project_id):
     bc_data = bc_generator.get_breadcrumbs_data(current_user.username, project_id)
-    ctx = {"current_user": current_user.username,
+    ctx = {"current_user": current_user,
            "project_id": project_id,
            "bc_data": bc_data}
     return flask.render_template("project/project_view.html", **ctx)
