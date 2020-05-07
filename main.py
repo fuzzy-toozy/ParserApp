@@ -8,6 +8,7 @@ sys.path.insert(0, abs_fpath)
 sys.path.insert(0, os.path.join(abs_fpath, "src"))
 
 from server.server import app
+from server.server import main_app
 
 if __name__ == "__main__":
     try:

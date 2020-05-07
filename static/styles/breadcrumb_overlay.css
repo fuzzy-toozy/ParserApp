@@ -1,0 +1,17 @@
+ol.breadcrumb {
+    background-color: transparent;
+}
+
+ol.breadcrumb a {
+    color: #777;
+}
+
+.breadcrumb>.active {
+    color: black;
+}
+
+.breadcrumb > li + li:before {
+    color: #ccc;
+    content: "卐 ";
+    padding: 0 5px;
+}

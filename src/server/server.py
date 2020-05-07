@@ -6,6 +6,7 @@ from sqlalchemy import MetaData, and_
 import sqlalchemy
 from flask_login import LoginManager, login_required, logout_user, current_user, login_user
 from flask_session import Session
+from flask_wtf.csrf import CSRFProtect, CSRFError
 
 from datetime import timedelta
 
@@ -31,9 +32,12 @@ class ServerApp:
         self.root_dir = "/home/fuzzy/shit/gledos/gachi_parser/"
         self.flask_app = Flask(__name__, root_path=self.root_dir)
         self.login_manager = flask_login_mgr
-        self.db = None
+
         self.session = Session()
         self.scan_processor = ScanProcessor()
+        self.csrf_protect = CSRFProtect()
+
+        self.db = None
         self.db_engine = None
 
     def init(self):
@@ -49,6 +53,7 @@ class ServerApp:
         self.flask_app.config["SESSION_TYPE"] = "sqlalchemy"
         self.flask_app.config["SESSION_SQLALCHEMY"] = flask_db
 
+        self.csrf_protect.init_app(self.flask_app)
         self.session.init_app(self.flask_app)
         self.login_manager.init_app(self.flask_app)
         self.init_db()
@@ -103,6 +108,11 @@ class ServerApp:
 
 main_app = ServerApp(login_manager)
 app = main_app.create_app()
+
+
+@app.errorhandler(CSRFError)
+def handle_csrf_error(e):
+    return e.description, 400
 
 
 @app.before_request

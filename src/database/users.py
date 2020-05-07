@@ -6,6 +6,7 @@ from .models import User, Base
 from werkzeug.security import generate_password_hash
 from contextlib import contextmanager
 
+
 def create_admin():
     exists = flask_db.session.query(flask_db.exists().where(User.username == "Admin")).scalar()
     if not exists:
