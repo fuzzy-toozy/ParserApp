@@ -2,7 +2,7 @@
     <div class="col-xs-12">
         <div class="box box-primary">
             <div class="box-body">
-        {% if not entities %}
+        {% if not products %}
             NO ENTITIES CREATED
         {% else %}
             <table id="example" class="table table-bordered table-striped text-center">
@@ -13,16 +13,16 @@
                 </tr>
             </thead>
             <tbody>
-            {% for entity in entities %}
+            {% for product in products %}
             <tr>
-                <td>{{ entity.name }}</td>
+                <td>{{ product.name }}</td>
                 <td>
-                    <a id="entity_edit" class="btn btn-app" name="{{ entity.id  }}"
-                            onclick="window.location.href = '{{ url_for(edit_entity, project_id=project_id, entity_id=entity.id) }}';"
+                    <a id="entity_edit" class="btn btn-app" name="{{ product.id  }}"
+                            onclick="window.location.href = '{{ url_for('products.edit_product', project_id=project_id, product_id=product.id)}}';"
                     ><i class="fa fa-cogs"></i>Settings</a>
                     <a id="entity_remove" class="btn btn-app"
-                            onclick = "remove_entity({{ project_id }}, '{{ common_name }}', {{ entity.id }}, '{{ entity.name }}', '{{ delete_entity_url }}', '{{ entity_view_url }}' )"
-                            name="{{ entity.id  }}"><i class="fa fa-trash"></i>Delete</a>
+                            onclick = "remove_product({{ project_id }}, {{ product.id }}, '{{ product.name }}')"
+                            name="{{ product.id  }}"><i class="fa fa-trash"></i>Delete</a>
                 </td>
             </tr>
             {% endfor %}
@@ -34,7 +34,7 @@
                 </tr>
             </tfoot>
             </table>
-            {% endif %}
+        {% endif %}
             </div>
         </div>
     </div>

@@ -1,34 +1,114 @@
-{% extends 'base.html' %}
-{% block add_scripts %}
+{% extends 'base_site.html' %}
+{% block title %}
+Edit Monitoring
+{% endblock title%}
+{% block stylesheets %}
 <link rel="stylesheet" href="/static/styles/monitoring_mgmt.css">
 <link rel="stylesheet" href="/static/styles/edit_monitoring.css">
-<script src="/static/js/common.js"></script>
-<script src="/static/js/edit_monitoring_callbacks.js"></script>
-{% endblock %}
-{% block menu_entities %}
-    {% include 'menu_entities.html'  %}
-{% endblock %}
-{% block horizontal_pane %}
-    {% include 'horizontal_edit_pane.html' %}
+{% endblock stylesheets %}
+{% block navigation_bar %}
+    <li>
+        <a class="btn btn-app" href="{{ redirect_url }}"><i class="fa fa-bar-chart"></i>Cancel</a>
+    </li>
+    <li>
+        <a onclick="save_monitoring_data('{{save_url}}', '{{redirect_url}}', '{{project_id}}', '{{entity_id}}')" class="btn btn-app" ><i class="fa fa-bar-chart"></i>Save</a>
+    </li>
 {% endblock %}
 {% block breadcrumbs %}
-    {% include 'breadcrumbs_list.html' %}
+    {% include 'breadcrumb_list_new.html' %}
 {% endblock %}
-{% block page_content %}
-    <div>
-        <form id="monitoring_name" method="post" enctype="multipart/form-data">
-            <div style="float: left">
-                <div>
-                    <label id="file-parse-failure-msg" for="monitoring_name">Monitoring Name</label>
-                    <input id="monitoring_name_input" type="text" value="{{monitoring_name}}">
-                </div>
-            </div>
-        </form>
+{% block content %}
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="box" style="background-color: transparent; border: none; box-shadow: none;">
+        <label for="monitoring_enabled_input"><b>Enabled:</b></label>
+        <label id="enabled_switch" class="switch">
+            <input id="monitoring_enabled_input" type="checkbox"
+                           {% if monitoring_enabled %}
+                           checked
+                           {% endif %}
+            >
+            <span class="slider round"></span>
+        </label>
+        </div>
     </div>
-    <div id="current_view" class="brdr">
-        <div class="tables_container">
-            <div class="table_container">
-                <table id="chosen_products_table">
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="box box-primary">
+            <form id="monitoring_name" method="post" enctype="multipart/form-data" role="form">
+                <div class="box-body">
+                    <div class="form-group">
+                        <label id="file-parse-failure-msg" for="monitoring_name">Monitoring Name</label>
+                        <input class="form-control" id="monitoring_name_input" type="text" value="{{monitoring_name}}">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="col-sm-4 col-md-2">
+        <div class="box box-primary">
+            <div class="box-body">
+                <label for="seller_self"><b>Seller Self:</b></label>
+                <select id="seller_self" class="dropbtn select_base">
+                    <option value="NONE" disabled selected>Seller Self:</option>
+                    {% for seller in project_sellers %}
+                        {% if seller.id == seller_self_id %}}
+                            <option selected value="{{seller.id}}">{{seller.name}}</option>
+                        {% else %}
+                            <option value="{{seller.id}}">{{seller.name}}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-4 col-md-2">
+        <div class="box box-primary">
+            <div class="box-body">
+                <label for="update_interval"><b>Scan Interval:</b></label>
+                <select id="update_interval" class="dropbtn select_base">
+                    {% for value, description in scan_intervals.items() %}
+                        {% if value == enabled_scan_interval %}
+                        <option selected value="{{value}}">{{description}}</option>
+                        {% else %}
+                        <option value="{{value}}">{{description}}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-4 col-md-2">
+        <div class="box box-primary">
+            <div class="box-body">
+                <label for="request_interval"><b>Request interval:</b></label>
+                <select id="request_interval" class="dropbtn select_base">
+                    {% for value, description in request_intervals.items() %}
+                        {% if value == enabled_request_interval %}
+                        <option selected value="{{value}}">{{description}}</option>
+                        {% else %}
+                        <option value="{{value}}">{{description}}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="box box-primary">
+            <div class="box-body">
+                <table id="chosen_products_table" class="table table-bordered table-striped text-center">
                     <thead>
                         <tr>
                             <th>Product</th>
@@ -44,8 +124,7 @@
                     {% endfor %}
                     </tbody>
                 </table>
-
-                <div class="dropdown" style="text-align: left">
+                                <div class="dropdown" style="text-align: left">
                     <button id="product_list_chose" onclick="on_list_click('product_list_view')"
                             class="dropbtn">Chose product to add</button>
                     <div id="product_list_view" class="dropdown-content">
@@ -56,9 +135,12 @@
                     </div>
                 </div>
             </div>
-
-            <div class="table_container">
-                <table id="chosen_sellers_table">
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="box box-primary">
+            <div class="box-body">
+                <table id="chosen_sellers_table" class="table table-bordered table-striped text-center">
                     <thead>
                         <tr>
                             <th>Seller</th>
@@ -86,58 +168,10 @@
                     </div>
                 </div>
             </div>
-
-            <div class="custom-select" style="width:200px; float: left;">
-                <label for="seller_self"><b>Seller Self:</b></label>
-                <select id="seller_self" class="dropbtn select_base">
-                    <option value="NONE" disabled selected>Seller Self:</option>
-                    {% for seller in project_sellers %}
-                        {% if seller.id == seller_self_id %}}
-                            <option selected value="{{seller.id}}">{{seller.name}}</option>
-                        {% else %}
-                            <option value="{{seller.id}}">{{seller.name}}</option>
-                        {% endif %}
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="custom-select" style="width:200px; float: left; margin-top:30px;">
-                <label for="update_interval"><b>Scan Interval:</b></label>
-                <select id="update_interval" class="dropbtn select_base">
-                    {% for value, description in scan_intervals.items() %}
-                        {% if value == enabled_scan_interval %}
-                        <option selected value="{{value}}">{{description}}</option>
-                        {% else %}
-                        <option value="{{value}}">{{description}}</option>
-                        {% endif %}
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="custom-select" style="width:200px; float: left; margin-top:30px;">
-                <label for="request_interval"><b>Request interval:</b></label>
-                <select id="request_interval" class="dropbtn select_base">
-                    {% for value, description in request_intervals.items() %}
-                        {% if value == enabled_request_interval %}
-                        <option selected value="{{value}}">{{description}}</option>
-                        {% else %}
-                        <option value="{{value}}">{{description}}</option>
-                        {% endif %}
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div style="float: left; margin-top:30px;">
-                <label for="monitoring_enabled_input"><b>Enabled:</b></label>
-                <label id="enabled_switch" class="switch">
-                    <input id="monitoring_enabled_input" type="checkbox"
-                           {% if monitoring_enabled %}
-                           checked
-                           {% endif %}
-                    >
-                    <span class="slider round"></span>
-                </label>
-            </div>
         </div>
     </div>
+</div>
+{% endblock %}
+{% block javascripts %}
+    <script src="/static/js/edit_monitoring_callbacks.js"></script>
 {% endblock %}

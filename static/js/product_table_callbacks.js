@@ -2,8 +2,8 @@ var deleted_options = [];
 
 function edit_row(no)
 {
- document.getElementById("option_edit_button"+no).style.display="none";
- document.getElementById("option_save_button"+no).style.display="inline";
+ document.getElementById("option_edit_button"+no).classList.add("hidden");
+ document.getElementById("option_save_button"+no).classList.remove("hidden");
 
  var name = document.getElementById("option_name_row"+no);
 
@@ -12,6 +12,7 @@ function edit_row(no)
 
  edit_node.type = "text";
  edit_node.id = "option_name_text" + no;
+ edit_node.classList.add("form-control", "align-middle");
  edit_node.setAttribute("value", name_data);
  name.innerHTML = "";
  name.appendChild(edit_node);
@@ -26,8 +27,8 @@ function save_row(no)
  name_col_node.innerHTML = option_name.value;
  name_col_node.setAttribute("value", option_name.value);
 
- document.getElementById("option_edit_button"+no).style.display="inline";
- document.getElementById("option_save_button"+no).style.display="none";
+ document.getElementById("option_edit_button"+no).classList.remove("hidden");
+ document.getElementById("option_save_button"+no).classList.add("hidden");
 }
 
 function delete_row(no)
@@ -38,6 +39,19 @@ function delete_row(no)
     deleted_options.push(value);
  }
  table_row.outerHTML="";
+}
+
+function create_button(b_id, b_class, b_text, b_click, b_icon, t_len) {
+    let btn = document.createElement("a");
+    btn.id = b_id;
+    btn.classList.add("edit", "btn", "btn-app");
+    btn.onclick = function () { b_click(t_len); };
+    let icon_edit = document.createElement("i");
+    icon_edit.classList.add("fa", b_icon);
+    btn.appendChild(icon_edit);
+    btn.innerHTML += b_text;
+
+    return btn;
 }
 
 function add_row()
@@ -51,31 +65,15 @@ function add_row()
  var table_option_name_col = document.createElement("td");
  var table_buttons_col = document.createElement("td");
 
- var edit_button = document.createElement("input");
- var save_button = document.createElement("input");
- var delete_button = document.createElement("input");
+ var edit_button = create_button("option_edit_button" + table_len, "edit", "Edit", edit_row, "fa-cogs", table_len);
+ var save_button = create_button("option_save_button" + table_len, "save", "Save", save_row, "fa-cogs", table_len);
+ var delete_button = create_button("option_delete_button" + table_len, "delete", "Delete", delete_row, "fa-cogs", table_len);
+
+ save_button.classList.add("hidden");
 
  table_option_name_col.id= "option_name_row" + table_len;
  table_option_name_col.innerHTML = new_option_name;
  table_option_name_col.setAttribute("value", new_option_name);
-
- edit_button.id = "option_edit_button" + table_len;
- edit_button.value = "Edit";
- edit_button.class = "edit";
- edit_button.onclick = function () { edit_row(table_len); };
- edit_button.type = "button";
-
- save_button.id = "option_save_button" + table_len;
- save_button.class = "save";
- save_button.value = "Save";
- save_button.onclick = function () { save_row(table_len); };
- save_button.style.display="none";
- save_button.type = "button";
-
- delete_button.value = "Delete";
- delete_button.class = "delete";
- delete_button.onclick = function () { delete_row(table_len); };
- delete_button.type = "button";
 
  table_buttons_col.appendChild(edit_button);
  table_buttons_col.appendChild(save_button);
@@ -115,7 +113,7 @@ function save_current_product(project_id, product_id)
     var options_table = document.getElementById("options_data_table")
     var table_json = tableToJSON(options_table)
     var options_data = {"deleted": deleted_options, "rest": table_json};
-    var product_name = document.getElementById("product_name").getAttribute("value");
+    var product_name = document.getElementById("product_name_input").value;
 
     var project_data = JSON.stringify({
         "project_id": project_id,
@@ -139,7 +137,7 @@ function save_current_product(project_id, product_id)
 }
 
 function remove_product(project_id, product_id, product_name) {
-    if (confirm('Delete project ' + product_name + '?')) {
+    if (confirm('Delete product ' + product_name + '?')) {
         $.ajax({
             type: 'POST',
             url: '/delete_product',

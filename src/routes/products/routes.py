@@ -21,7 +21,7 @@ def products_view(project_id):
         with session_scope(current_user.username) as session:
             current_products = session.query(Product).filter(Product.project_id == int(project_id)).all()
             return flask.render_template("product/products_view.html",
-                                         current_user=current_user.username,
+                                         current_user=current_user,
                                          project_id=project_id,
                                          products=current_products,
                                          bc_data=bc_data)
@@ -43,7 +43,8 @@ def edit_product(project_id, product_id):
 
     bc_data = bc_generator.get_breadcrumbs_data(current_user.username, project_id, bc_action_id, [ENTS.PRODUCTS])
     return flask.render_template("product/edit_product.html",
-                                 current_user=current_user.username,
+                                 redirect_url=flask.url_for("products.products_view", project_id=project_id),
+                                 current_user=current_user,
                                  product_options=current_product_opts,
                                  product_name=current_product_name,
                                  project_id=project_id,

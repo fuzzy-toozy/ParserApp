@@ -160,6 +160,7 @@ function save_monitoring_data(save_data_url, redirect_url, project_id, monitorin
             window.location.href = redirect_url
         },
         error: function (error_message) {
+            console.log(error_message);
         }
     })
 }

@@ -3,6 +3,7 @@ import json
 
 from flask_login import login_required, current_user
 from flask import Blueprint
+from flask_wtf import FlaskForm
 
 from sqlalchemy import and_
 
@@ -19,16 +20,16 @@ parsers = Blueprint("parsers", __name__)
 
 def validate_parser(parser_file, parser_name, parsers_dir):
     response_dict = {}
-    parser_code = None
     validation_res = False
     try:
         parser_code = parser_file.read()
+        parser_code = parser_code.decode("utf-8")
     except Exception as ex:
+        parser_code = None
         response_dict["result"] = "ERROR"
         response_dict["message"] = str(ex)
 
     if parser_code:
-        parser_code = parser_code.decode("utf-8")
         parser_module, err_msg, parser_code = parsing.make_parser_module(parser_code, parser_name, parsers_dir)
         if parser_module:
             validation_res, err = parsing.check_required_function(parser_module)
@@ -58,7 +59,7 @@ def parsers_view(project_id):
     edit_entity = 'parsers.edit_parser'
 
     return flask.render_template("parser/parsers_view.html",
-                                 current_user=current_user.username,
+                                 current_user=current_user,
                                  project_id=project_id,
                                  entities=current_sellers,
                                  common_name="parser",
@@ -95,7 +96,7 @@ def edit_parser(project_id, entity_id):
         bc_data = bc_generator.get_breadcrumbs_data(current_user.username, project_id, bc_operation, [ENTS.PARSERS])
 
         return flask.render_template("parser/edit_parser.html",
-                                     current_user=current_user.username,
+                                     current_user=current_user,
                                      parser_code=parser_code,
                                      entity_id=entity_id,
                                      project_id=project_id,
@@ -177,7 +178,7 @@ def test_parser(project_id, parser_id):
     else:
         parser_result = "No parser code supplied"
 
-    return flask.render_template("parser/test_parser.html", current_user=current_user.username,
+    return flask.render_template("parser/test_parser.html", current_user=current_user,
                                  label_message=label_message,
                                  parser_exec_ok=parser_exec_ok,
                                  parser_result=parser_result,
@@ -195,9 +196,11 @@ def test_parser_view(project_id, parser_id):
         parser_code = current_parser.code
     else:
         parser_code = None
+    form = FlaskForm()
     submit_url = flask.url_for("parsers.test_parser", project_id=project_id, parser_id=parser_id)
     return flask.render_template("parser/test_parser_view.html", current_user=current_user.username,
                                  current_parser=current_parser,
+                                 form=form,
                                  parser_code=parser_code,
                                  project_id=project_id,
                                  submit_url=submit_url)

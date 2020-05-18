@@ -32,8 +32,6 @@ function remove_entity(project_id, common_name, entity_id, entity_name, post_url
 function click_upload_btn()
 {
         form_has_valid_data = false;
-        // Обнуляем поля с сообщениями об ошибках и форму с файлом
-        document.getElementById('file-parse-failure-msg').innerText = "";
 
         $('input[id=parser-file-input]').trigger('change');
         $('input[id=parser-file-input]').trigger('click');
@@ -78,9 +76,32 @@ function input_form_change(form)
         }
 }
 
+function create_alert_block(alert_msg_text) {
+    let alert_block = document.createElement("div");
+    alert_block.classList.add("alert", "alert-danger", "alert-dismissible");
+
+    let close_btn = document.createElement("buttton");
+    close_btn.classList.add("close");
+    close_btn.setAttribute("type", "button");
+    close_btn.setAttribute("data-dismiss", "alert");
+    close_btn.setAttribute("aria-hidden", "true");
+    close_btn.innerHTML = "x";
+
+    let alert_message = document.createElement("h4");
+    let icon_alert = document.createElement("i");
+    icon_alert.classList.add("icon", "fa", "fa-ban");
+
+    alert_message.appendChild(icon_alert);
+    alert_message.innerText += alert_msg_text;
+
+    alert_block.appendChild(close_btn);
+    alert_block.appendChild(alert_message);
+
+    return alert_block;
+}
+
 function save_parser_data(post_url, redirect_url)
 {
-        let file_check_text_label = document.getElementById('file-parse-failure-msg');
         let parser_name_input =  document.getElementById('parser-name-input');
         let parser_name = parser_name_input.value;
 
@@ -103,18 +124,17 @@ function save_parser_data(post_url, redirect_url)
                 let json_response = JSON.parse(JSON.stringify(data))
                 let response_result = json_response["result"];
                 let response_message = json_response["message"];
+                let content_container = document.getElementById("main_box");
 
                 if (response_result == "ERROR") {
-                    file_check_text_label.style.color = "red";
-                    file_check_text_label.innerText = response_message;
+                    content_container.appendChild(create_alert_block(response_message));
                 }
                 else if (response_result == "OK") {
-                    window.location.href = redirect_url
+                    window.location.href = redirect_url;
                 }
                 else {
-                    file_check_text_label.style.color = "red";
-                    file_check_text_label.innerText = "Unknown server response"
-                    console.log(JSON.stringify(data))
+                    content_container.appendChild(create_alert_block("Unknown server response"));
+                    console.log(JSON.stringify(data));
                 }
             },
             // Ошибка http
@@ -126,18 +146,18 @@ function save_parser_data(post_url, redirect_url)
                         msg = 'Requested page not found. [404]';
                     } else if (jqXHR.status == 500) {
                          msg = 'Internal Server Error [500].';
-                    } else if (exception === 'parsererror') {
+                    } else if (except == 'parsererror') {
                         msg = 'Requested JSON parse failed.';
-                    } else if (exception === 'timeout') {
+                    } else if (except == 'timeout') {
                         msg = 'Time out error.';
-                    } else if (exception === 'abort') {
+                    } else if (except == 'abort') {
                         msg = 'Ajax request aborted.';
                     } else {
                          msg = 'Uncaught Error.\n' + jqXHR.responseText;
                     }
                     console.log(msg);
-                    file_check_text_label.style.color = "red";
-                    file_check_text_label.innerText = msg;
+                    let content_container = document.getElementById("main_box");
+                    content_container.appendChild(create_alert_block(msg));
             }
         })
 }

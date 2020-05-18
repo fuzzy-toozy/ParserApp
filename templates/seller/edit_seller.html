@@ -1,22 +1,30 @@
-{% extends 'base.html' %}
-{% block add_scripts %}
-<script src="/static/js/common.js"></script>
-{% endblock %}
-{% block menu_entities %}
-    {% include 'menu_entities.html'  %}
-{% endblock %}
-{% block horizontal_pane %}
-    {% include 'horizontal_edit_save_plane.html' %}
+{% extends 'base_site.html' %}
+{% block title %}
+Sellers View
+{% endblock title%}
+{% block navigation_bar %}
+    {% include 'nav_edit_bar.html' %}
 {% endblock %}
 {% block breadcrumbs %}
-    {% include 'breadcrumbs_list.html' %}
+    {% include 'breadcrumb_list_new.html' %}
 {% endblock %}
-{% block page_content %}
-    <div id="current_view" class="brdr">
-        <form id="save_entity_form" method="POST" action="{{ save_entity_url }}">
-        {{ form.csrf_token }}
-        {{ form.name.label }}
-        {{ form.name }}
-        </form>
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="box box-primary">
+            <form id="save_entity_form" method="post" action="{{ save_entity_url }}" enctype="multipart/form-data" role="form">
+                {{ form.csrf_token }}
+                <div class="box-body">
+                    <div class="form-group">
+                        <label id="seller_name_label" for="seller_name_input">Seller Name</label>
+                        <input name="seller_name" class="form-control" id="seller_name_input" type="text" value="{{seller.name}}">
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
+</div>
+{% endblock %}
+{% block javascripts %}
+    <script src="/static/js/common.js"></script>
 {% endblock %}

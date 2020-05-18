@@ -1,0 +1,48 @@
+<div class="row">
+    <div class="col-md-6">
+        <div class="box box-primary">
+            <form id="product_name" method="post" enctype="multipart/form-data" role="form">
+                <div class="box-body">
+                    <div class="form-group">
+                        <label id="file-parse-failure-msg" for="product_name">Product Name</label>
+                        <input class="form-control" id="product_name_input" type="text" value="{{product_name}}">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="box box-primary">
+            <table id="options_data_table" class="table table-bordered table-striped text-center">
+            <thead>
+            <tr>
+                <th>Option</th>
+                <th>Option Value</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% set trow_idx = 1 %}
+            {% for option in product_options %}
+            <tr id="option_table_row{{loop.index}}" value="{{option.id}}">
+                <td id="option_name_row{{loop.index}}" value="{{option.name}}">{{ option.name }}</td>
+                <td>
+                    <a id="option_edit_button{{loop.index}}" class="btn btn-app" name="{{ option.id  }}" onclick="edit_row({{loop.index}})"
+                    ><i class="fa fa-cogs"></i>Edit</a>
+                    <a id="option_save_button{{loop.index}}" class="btn btn-app hidden" name="{{ option.id  }}" onclick="save_row({{loop.index}})"
+                    ><i class="fa fa-cogs"></i>Save</a>
+                    <a class="btn btn-app" name="{{ option.id  }}" onclick="delete_row({{loop.index}})"
+                    ><i class="fa fa-cogs"></i>Delete</a>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td><input class="form-control" type="text" id="option_new_name"></td>
+                <td><a class="add btn btn-app" onclick="add_row();"><i class="fa fa-plus"></i>Add</a></td>
+            </tr>
+            </tbody>
+            </table>
+        </div>
+    </div>
+</div>

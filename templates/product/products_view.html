@@ -1,57 +1,20 @@
-{% extends 'base.html' %}
-{% block add_scripts %}
-<script src="/static/js/product_table_callbacks.js"></script>
-{% endblock %}
-{% block menu_entities %}
-    {% include 'menu_entities.html'  %}
-{% endblock %}
-{% block horizontal_pane %}
-    <div class="button-grp-horizontal">
-        <p class="left">{{ current_user }}</p>
-        <div id="head_buttons_view" class="right" style="width: 50%">
-            <button id="create_product" name="{{ project_id  }}"
-                    class="btn-horizontal default right"
-                    onclick="window.location.href = '{{ url_for('products.edit_product', project_id=project_id, product_id='new_product') }}';"
-            >Create product</button>
-        </div>
-    </div>
+{% extends 'base_site.html' %}
+{% block title %}
+Products View
+{% endblock title%}
+{% block navigation_bar %}
+    <li>
+        <a class="btn btn-app" href="{{ url_for('products.edit_product', project_id=project_id, product_id='new_product') }}">
+            <i class="fa fa-bar-chart"></i>Create Product</a>
+    </li>
 {% endblock %}
 {% block breadcrumbs %}
-    {% include 'breadcrumbs_list.html' %}
+    {% include 'breadcrumb_list_new.html' %}
 {% endblock %}
-{% block page_content %}
-<div id="current_view" class="brdr">
-        {% if not products %}
-            NO PRODUCTS CREATED
-        {% else %}
-            <table id="example" class="display" style="width:100%">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for product in products %}
-            <tr>
-                <td>{{ product.name }}</td>
-                <td>
-                    <button id="product_edit" name="{{ product.id  }}"
-                            onclick="window.location.href = '{{ url_for('products.edit_product', project_id=project_id, product_id=product.id)}}';"
-                    >Edit</button>
-                    <button id="product_remove" onclick="remove_product({{ project_id }}, {{ product.id }}, '{{ product.name }}')"
-                            name="{{ product.id }}">Delete</button>
-                </td>
-            </tr>
-            {% endfor %}
-            </tbody>
-            <tfoot>
-                <tr>
-                    <th>Name</th>
-                    <th>Actions</th>
-                </tr>
-            </tfoot>
-            </table>
-        {% endif %}
-</div>
+{% block content %}
+    {% include 'product/products_table_view.html' %}
+{% endblock %}
+{% block javascripts %}
+    <script src="/static/js/common.js"></script>
+    <script src="/static/js/product_table_callbacks.js"></script>
 {% endblock %}

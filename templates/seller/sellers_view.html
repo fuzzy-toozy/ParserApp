@@ -1,16 +1,16 @@
-{% extends 'base.html' %}
-{% block add_scripts %}
-<script src="/static/js/common.js"></script>
-{% endblock %}
-{% block menu_entities %}
-    {% include 'menu_entities.html'  %}
-{% endblock %}
-{% block horizontal_pane %}
-    {% include 'horizontal_create_plane.html'  %}
+{% extends 'base_site.html' %}
+{% block title %}
+Sellers View
+{% endblock title%}
+{% block navigation_bar %}
+    {% include 'nav_create_bar.html' %}
 {% endblock %}
 {% block breadcrumbs %}
-    {% include 'breadcrumbs_list.html' %}
+    {% include 'breadcrumb_list_new.html' %}
 {% endblock %}
-{% block page_content %}
+{% block content %}
     {% include 'common_table_view.html'  %}
+{% endblock %}
+{% block javascripts %}
+    <script src="/static/js/common.js"></script>
 {% endblock %}
