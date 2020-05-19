@@ -68,7 +68,7 @@ def parsers_view(project_id):
                                  entity_view_url=entity_view_url,
                                  edit_entity=edit_entity,
                                  bc_data=bc_data,
-                                 create_ent_txt="Create parser")
+                                 create_ent_txt="Create Parser")
 
 
 @parsers.route("/edit_parser/<project_id>/<entity_id>", methods=['GET', 'POST'])
@@ -184,7 +184,8 @@ def test_parser(project_id, parser_id):
                                  parser_result=parser_result,
                                  current_parser=current_parser,
                                  parser_code=parser_code,
-                                 project_id=project_id)
+                                 project_id=project_id,
+                                 back_url=flask.url_for("parsers.test_parser_view", project_id=project_id, parser_id=parser_id))
 
 
 @parsers.route("/test_parser_view/<project_id>/<parser_id>", methods=['GET'])
@@ -198,9 +199,10 @@ def test_parser_view(project_id, parser_id):
         parser_code = None
     form = FlaskForm()
     submit_url = flask.url_for("parsers.test_parser", project_id=project_id, parser_id=parser_id)
-    return flask.render_template("parser/test_parser_view.html", current_user=current_user.username,
+    return flask.render_template("parser/test_parser_view.html", current_user=current_user,
                                  current_parser=current_parser,
                                  form=form,
                                  parser_code=parser_code,
                                  project_id=project_id,
-                                 submit_url=submit_url)
+                                 submit_url=submit_url,
+                                 back_url=flask.url_for("parsers.edit_parser", project_id=project_id, entity_id=parser_id))

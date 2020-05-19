@@ -4,13 +4,13 @@ Edit Parser
 {% endblock title%}
 {% block navigation_bar %}
 <li>
-    <a id="test_parser" onclick="window.location.href = '{{ test_parser_url }}';" class="btn btn-app" ><i class="fa fa-bar-chart"></i>Test Parser</a>
+    <a id="test_parser" onclick="window.location.href = '{{ test_parser_url }}';" class="btn btn-app" ><i class="fa fa-file-code-o"></i>Test Parser</a>
 </li>
 <li>
-    <a class="btn btn-app" onclick="window.location.href = '{{ entity_view_url }}';"><i class="fa fa-bar-chart"></i>Cancel</a>
+    <a class="btn btn-app" onclick="window.location.href = '{{ entity_view_url }}';"><i class="fa fa-close"></i>Cancel</a>
 </li>
 <li>
-    <a id="save_entity" onclick="save_parser_data('{{save_entity_url}}','{{entity_view_url}}')" class="btn btn-app" ><i class="fa fa-bar-chart"></i>Save</a>
+    <a id="save_entity" onclick="save_parser_data('{{save_entity_url}}','{{entity_view_url}}')" class="btn btn-app" ><i class="fa fa-save"></i>Save</a>
 </li>
 {% endblock %}
 {% block breadcrumbs %}

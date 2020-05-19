@@ -8,10 +8,10 @@ Edit Monitoring
 {% endblock stylesheets %}
 {% block navigation_bar %}
     <li>
-        <a class="btn btn-app" href="{{ redirect_url }}"><i class="fa fa-bar-chart"></i>Cancel</a>
+        <a class="btn btn-app" href="{{ redirect_url }}"><i class="fa fa-close"></i>Cancel</a>
     </li>
     <li>
-        <a onclick="save_monitoring_data('{{save_url}}', '{{redirect_url}}', '{{project_id}}', '{{entity_id}}')" class="btn btn-app" ><i class="fa fa-bar-chart"></i>Save</a>
+        <a onclick="save_monitoring_data('{{save_url}}', '{{redirect_url}}', '{{project_id}}', '{{entity_id}}')" class="btn btn-app" ><i class="fa fa-save"></i>Save</a>
     </li>
 {% endblock %}
 {% block breadcrumbs %}
@@ -124,7 +124,7 @@ Edit Monitoring
                     {% endfor %}
                     </tbody>
                 </table>
-                                <div class="dropdown" style="text-align: left">
+                <div class="dropdown" style="text-align: left">
                     <button id="product_list_chose" onclick="on_list_click('product_list_view')"
                             class="dropbtn">Chose product to add</button>
                     <div id="product_list_view" class="dropdown-content">

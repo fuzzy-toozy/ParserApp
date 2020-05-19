@@ -31,7 +31,14 @@ function on_expand_product(cur_td, table_id, data_id, ajax_url) {
 }
 
 $(document).ready(function() {
-    var sellers_table = $('#monitored_products').DataTable({"scrollX": true});
+    var sellers_table = $('#monitored_products').DataTable({
+      'paging'      : false,
+      'lengthChange': false,
+      'searching'   : false,
+      'ordering'    : true,
+      'info'        : true,
+      'autoWidth'   : false
+    });
 });
 
 function remove_mon_object(project_id, mon_id, sel_id, prod_id, prod_name, sel_name , post_url, redirect_url)

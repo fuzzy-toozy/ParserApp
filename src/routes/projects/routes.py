@@ -32,10 +32,10 @@ def main_form():
 @login_required
 def create_project():
     bc_data = bc_generator.get_breadcrumbs_data(current_user.username, None, ENTS.CREATE_PROJECT)
-    if flask.request.method == 'GET':
+    if flask.request.method == "GET":
         return flask.render_template("project/create_project.html", current_user=current_user.username, form=ProjectForm(), bc_data=bc_data)
     else:
-        project_name = flask.request.form.get('name')
+        project_name = flask.request.form.get("project_name")
         with session_scope(current_user.username) as session:
             session.add(Project(name=project_name))
         return flask.redirect(flask.url_for("projects.main_form"))
@@ -44,15 +44,18 @@ def create_project():
 @projects.route("/project_settings/<project_id>", methods=['GET', 'POST'])
 @login_required
 def project_settings(project_id):
-    if flask.request.method == 'GET':
+    if flask.request.method == "GET":
         bc_data = bc_generator.get_breadcrumbs_data(current_user.username, None, ENTS.EDIT_PROJECT)
+        with session_scope(current_user.username) as session:
+            current_project = session.query(Project).filter(Project.id == project_id).first()
+            project_name = current_project.name if current_project else ""
         return flask.render_template("project/project_settings.html", current_user=current_user,
-                                     form=ProjectForm(), project_id=project_id, bc_data=bc_data)
+                                     form=ProjectForm(), project_id=project_id, bc_data=bc_data, project_name=project_name)
     else:
         with session_scope(current_user.username) as session:
             current_proj = session.query(Project).filter(Project.id == project_id).first()
             if current_proj:
-                current_proj.name = flask.request.form.get('name')
+                current_proj.name = flask.request.form.get("project_name")
             return flask.redirect(flask.url_for("projects.main_form"))
 
 

@@ -92,7 +92,7 @@ def edit_monitoring(project_id, entity_id):
             enabled_request_interval=current_monitoring.request_interval
 
     return flask.render_template("monitoring/edit_monitoring.html",
-                                 current_user=current_user.username,
+                                 current_user=current_user,
                                  project_id=project_id,
                                  entity_id=entity_id,
                                  monitoring_products=monitoring_products,
@@ -321,7 +321,7 @@ def edit_monitoring_object(project_id, monitoring_id, product_id, seller_id):
                                                     [ENTS.MONITORINGS], Monitoring, monitoring_id, ENTS.MONITORING)
 
     return flask.render_template("monitoring/edit_monitoring_object.html",
-                                 current_user=current_user.username,
+                                 current_user=current_user,
                                  project_id=project_id,
                                  monitoring_id=monitoring_id,
                                  product=product,
@@ -457,7 +457,7 @@ def monitoring_view_flat(project_id, monitoring_id):
             sids.add(mon_object.seller_id)
 
     return flask.render_template("monitoring/monitoring_view_flat.html",
-                                 current_user=current_user.username,
+                                 current_user=current_user,
                                  project_id=project_id,
                                  monitoring_id=monitoring_id,
                                  monitoring_sellers=all_monitoring_sellers,
@@ -465,4 +465,5 @@ def monitoring_view_flat(project_id, monitoring_id):
                                  seller_self_id=monitoring.seller_self_id,
                                  bc_data=bc_data,
                                  remove_url=flask.url_for("monitorings.delete_monitoring_object"),
-                                 pids_to_sids=pids_to_sids)
+                                 pids_to_sids=pids_to_sids,
+                                 back_url=flask.url_for("monitorings.monitorings_view", project_id=project_id))

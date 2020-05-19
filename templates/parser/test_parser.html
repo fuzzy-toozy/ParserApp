@@ -1,32 +1,53 @@
-{% extends 'base.html' %}
-{% block add_scripts %}
-<link rel="stylesheet" href="/static/styles/highlight_default.css">
-<script src="/static/js/highlight.pack.js"></script>
-<script>hljs.initHighlightingOnLoad();</script>
-<script src="/static/js/common.js"></script>
+{% extends 'base_site.html' %}
+{% block title %}
+Test Parser
+{% endblock title%}
+{% block navigation_bar %}
+<li>
+    <a href="{{ back_url }}" class="btn btn-app"><i class="fa fa-arrow-left"></i>Back</a>
+</li>
 {% endblock %}
-{% block menu_entities %}
-    {% include 'menu_entities.html'  %}
+{% block breadcrumbs %}
+    {% include 'breadcrumb_list_new.html' %}
 {% endblock %}
-{% block page_content %}
-        <div class="button-grp-horizontal">
-            <p class="left">{{ current_user }}</p>
+{% block content %}
+<div class="row">
+    <div class="col-xs-12">
+    <div class="box box-primary">
+        <div class="box-header">
+            <h3 class="box-title">{{ label_message }}</h3>
         </div>
-        <div>
-{{label_message}}
-            <div>
-                <pre>
-                    <code>
-{{parser_result}}
-                    </code>
-                </pre>
-            </div>
-        </div>
-        <div id="snippet" style="text-align: left">
+        <div class="box-body">
             <pre>
+{{parser_result}}
+            </pre>
+        </div>
+    </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box box-primary">
+            <div class="box-body">
+<label id="parser-code-label" for="parser-code"><b>Code:</b></label>
+            <pre id="parser-code">
                 <code id="current_parser_code">
 {{parser_code}}
                 </code>
             </pre>
+            </div>
         </div>
+    </div>
+</div>
+{% endblock %}
+{% block stylesheets %}
+<link rel="stylesheet" href="/static/styles/highlight_default.css">
+{% endblock %}
+{% block javascripts %}
+<script src="/static/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script src="/static/js/common.js"></script>
+<script src="/static/js/parser_callbacks.js"></script>
+<script src="/static/js/test_parser.js"></script>
 {% endblock %}
