@@ -234,10 +234,13 @@ def scan_stats():
 
 @app.route('/', methods=['GET', 'POST'])
 def login_page():
+
     if current_user.is_authenticated:
         return flask.redirect(flask.url_for("projects.main_form"))
 
     if flask.request.method == 'POST':
+        print("AMIPOST?")
+        print(flask.request.form)
         username = flask.request.form.get('username')
         password = flask.request.form.get('password')
 
@@ -249,7 +252,7 @@ def login_page():
                 return flask.redirect(flask.url_for("projects.main_form"))
 
         flask.flash('Invalid username/password combination')
-        return flask.redirect(flask.url_for("login_page"))
+        return flask.redirect(flask.url_for("main_form"))
 
     return flask.render_template('login.html', form=LoginForm())
 
