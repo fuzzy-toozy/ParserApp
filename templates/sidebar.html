@@ -26,6 +26,11 @@
         {% if project_id %}
           {% include "sidebar_entities.html" %}
         {% endif %}
+        <li>
+          <a id="scan_stats" href="{{ url_for('show_scan_stats') }}">
+            <i class="fa fa-search-plus"></i> <span>Scan stats</span>
+          </a>
+        </li>
         <li class="header"></li>
         <li><a href="/logout"><i class="fa fa-circle-o text-red"></i> <span>Logout</span></a></li>
       </ul>

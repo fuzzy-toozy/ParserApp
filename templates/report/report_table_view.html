@@ -1,0 +1,28 @@
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box box-primary">
+            <div class="box-body">
+        {% if not view_data %}
+            NO ENTITIES CREATED
+        {% else %}
+            <table id="report_data" class="table table-bordered table-striped text-center">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Product</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for product_name, seller_product_data in view_data.items() %}
+            <tr>
+                <td></td>
+                <td>{{ product_name }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+            </table>
+            {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

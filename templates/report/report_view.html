@@ -1,0 +1,24 @@
+{% extends 'base_site.html' %}
+{% block title %}
+Reports View
+{% endblock title%}
+{% block breadcrumbs %}
+    {% include 'breadcrumb_list_new.html' %}
+{% endblock %}
+{% block content %}
+    {% include 'report/report_table_view.html' %}
+{% endblock %}
+{% block stylesheets %}
+<link rel="stylesheet" href="/static/styles/detail_control.css">
+{% endblock stylesheets %}
+{% block javascripts %}
+<script src="/static/js/common.js"></script>
+<script src="/static/js/report_view.js"></script>
+<script>
+{% if view_data %}
+let view_data = {{view_data | tojson | safe}}
+{% else %}
+view_data = false;
+{% endif %}
+</script>
+{% endblock %}

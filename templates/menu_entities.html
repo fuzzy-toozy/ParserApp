@@ -9,4 +9,4 @@
 <button id="monitorings_menu" class="btn-vertical default" name="{{project_id}}"
         onclick="window.location.href = '{{ url_for('monitorings.monitorings_view', project_id=project_id) }}';">Monitorings</button>
 <button id="reports_menu" class="btn-vertical default" name="{{project_id}}"
-        onclick="window.location.href = ''">Reports</button>
+        onclick="window.location.href = '{{ url_for('reports.reports_view', project_id=project_id) }}';">Reports</button>

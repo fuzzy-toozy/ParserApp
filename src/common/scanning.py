@@ -1,6 +1,7 @@
 import traceback
 import os
 import errno
+import logging
 
 from datetime import datetime
 from common import parsing
@@ -10,6 +11,14 @@ from sqlalchemy import and_
 from multiprocessing import Process, Queue, Event, Lock
 from queue import Empty
 from signal import signal, SIGUSR1
+
+logging.basicConfig(filename="parser.log",
+                            filemode='a',
+                            format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+                            datefmt='%H:%M:%S',
+                            level=logging.DEBUG)
+
+log = logging.getLogger(__name__)
 
 
 class ScanningResult:
@@ -165,7 +174,6 @@ class MonitoringScanner:
                     if not monitored_product:
                         return ScanningResult.WARN, "No monitored product found in database"
 
-                    print("FREAKING MONITORED PRODUCT URL: %s" % monitored_product.url)
                     if stop_event.is_set():
                         return ScanningResult.INTERRUPTED, "Scanning interrupted"
                     page_dom, parser_result = parsing.get_page_dom(monitored_product.url)
@@ -206,7 +214,6 @@ class MonitoringScanner:
 
                     scan_stats.set_base_scan_data(monitored_product.id, base_parser, parser_exec_status,
                                                   f_parser_result, f_parser_error)
-
 
                 except Exception as ex:
                     err_msg = str(ex)
@@ -249,12 +256,12 @@ class MonitoringScanner:
                                 option_scan_res.scan_result = f_option_parser_result
                                 option_scan_res.scan_error = f_option_parser_error
                                 option_scan_res.result_code = option_parser_exec_status
-
-                            scan_stats.set_option_scan_data(monitored_product.id, product_option.name, option_parser, option_parser_exec_status, f_option_parser_result, f_option_parser_error)
+                            scan_stats.set_option_scan_data(monitored_product.id, product_option.name, option_parser,
+                                                            option_parser_exec_status, f_option_parser_result, f_option_parser_error)
                         except Exception as ex:
                             err_msg = str(ex)
                             scan_stats.set_option_scan_data(monitored_product.id, product_option.name, option_parser,
-                                                      ScanningResult.DATABASE_ERROR, "", err_msg)
+                                                            ScanningResult.DATABASE_ERROR, "", err_msg)
                             traceback.print_exc()
                             continue
                 except Exception as ex:

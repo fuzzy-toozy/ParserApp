@@ -1,0 +1,15 @@
+{% if seller_to_products %}
+{% for seller_name, seller_data in seller_to_products: %}
+<label value="">Seller {{seller_name}} products:</label>
+ <div class="form-group">
+    <select id="seller_select_{{seller_data['seller_id']}}" seller_id="{{seller_data['seller_id']}}" class="form-control select2"
+            style="width: 100%" multiple="" data-placeholder="Select product">
+    {% for object_id, product in seller_data['products'] %}
+    <option monitored_object_id="{{object_id}}" value="{{object_id}}">{{ product.name }}</option>
+    {% endfor %}
+    </select>
+</div>
+{% endfor %}
+{% else %}
+No monitoring objects created
+{% endif %}

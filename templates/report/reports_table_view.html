@@ -1,0 +1,45 @@
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box box-primary">
+            <div class="box-body">
+        {% if not entities %}
+            NO ENTITIES CREATED
+        {% else %}
+            <table id="example" class="table table-bordered table-striped text-center" style="table-layout: fixed;" width="100%">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for entity in entities %}
+            <tr>
+                <td>{{ entity.name }}</td>
+                <td>
+                    <a id="entity_view" class="btn btn-app" name="{{ entity.id  }}"
+                            onclick="window.location.href = '{{ url_for(view_entity, project_id=project_id, entity_id=entity.id) }}';"
+                    ><i class="fa fa-eye"></i>View</a>
+                    <a id="entity_edit" class="btn btn-app" name="{{ entity.id  }}"
+                            onclick="window.location.href = '{{ url_for(edit_entity, project_id=project_id, entity_id=entity.id) }}';"
+                    ><i class="fa fa-cogs"></i>Settings</a>
+                    <a id="entity_remove" class="btn btn-app"
+                            onclick = "remove_entity({{ project_id }}, '{{ common_name }}', {{ entity.id }}, '{{ entity.name }}', '{{ delete_entity_url }}', '{{ entity_view_url }}' )"
+                            name="{{ entity.id  }}"><i class="fa fa-trash"></i>Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th>Name</th>
+                    <th>Actions</th>
+                </tr>
+            </tfoot>
+            </table>
+            {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+

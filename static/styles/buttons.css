@@ -56,13 +56,6 @@ tfoot input {
     width: 15%;
 }
 
-.details-control {
-    background: url("/static/images/gachi/ashamed.jpeg");
-    background-size:     cover;                      /* <------ */
-    background-repeat:   no-repeat;
-    background-position: center center;
-}
-
 [class*="button-grp-vertical"] {
     width: 100%;
 }

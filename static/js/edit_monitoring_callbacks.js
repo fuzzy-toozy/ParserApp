@@ -164,3 +164,20 @@ function save_monitoring_data(save_data_url, redirect_url, project_id, monitorin
         }
     })
 }
+
+function post_force_scan(post_url) {
+        $.ajax({
+        type: 'POST',
+        url: post_url,
+        cache: false,
+        processData: false,
+        data: "",
+        contentType: "application/json",
+        success: function (data) {
+            alert("Scan started successfully");
+        },
+        error: function (error_message) {
+            alert(error_message);
+        }
+    });
+}

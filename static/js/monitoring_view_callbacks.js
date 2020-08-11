@@ -33,11 +33,10 @@ function on_expand_product(cur_td, table_id, data_id, ajax_url) {
 $(document).ready(function() {
     var sellers_table = $('#monitored_products').DataTable({
       'paging'      : false,
-      'lengthChange': false,
       'searching'   : false,
       'ordering'    : true,
-      'info'        : true,
-      'autoWidth'   : false
+      'scrollX'     : true,
+      'responsive'  : true
     });
 });
 

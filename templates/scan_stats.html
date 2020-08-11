@@ -1,0 +1,117 @@
+{% extends 'base_site.html' %}
+{% block title %}
+Reports View
+{% endblock title%}
+{% block breadcrumbs %}
+    {% include 'breadcrumb_list_new.html' %}
+{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-3 col-sm-6 col-xs-12">
+            <div class="info-box">
+                <span class="info-box-icon bg-green"><i class="fa fa-cogs"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Current scan state</span>
+                    <span class="info-box-number">{{ view_data["state"] }}</span>
+                </div>
+            </div>
+    </div>
+    {% if scan_state == "Scanning" %}
+    <div class="col-md-3 col-sm-6 col-xs-12">
+            <div class="info-box">
+                <span class="info-box-icon bg-green"><i class="fa fa-eye"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Current monitoring</span>
+                    <span class="info-box-number">{{ view_data["monitoring"] }}</span>
+                </div>
+            </div>
+    </div>
+    <div class="col-md-3 col-sm-6 col-xs-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-green"><i class="fa fa-check-circle"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Objects scanned:</span>
+                <span class="info-box-number">{{ view_data["objects_scanned"] }}</span>
+            </div>
+        </div>
+    </div>
+    {% if view_data.get("scan_started") %}
+    <div class="col-md-3 col-sm-6 col-xs-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-green"><i class="fa fa-calendar-check-o"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Scan started:</span>
+                <span class="info-box-number">{{ view_data["scan_started"] }}</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box box-primary">
+            <div class="box-body">
+                <table id="report_data" class="table table-bordered text-center">
+                    <thead>
+                        <tr>
+                            <th>Queued Objects</th>
+                        </tr>
+                    </thead>
+                <tbody>
+                    {% for obj_id, queued_object in view_data["queued"].items() %}
+                    <tr>
+                        <td>
+                            <div class="box box-primary">
+                                <div class="box-body">
+                            <div class="row">
+                                <div class="col-xs-12">
+                                    <div class="box">
+                                        <div class="box-body">
+                                            <label><b>Product:</b></label>
+                                            <div>{{ queued_object["product"]["name"] }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xs-12">
+                                    <div class="box">
+                                        <div class="box-body">
+                                            <label><b>Seller:</b></label>
+                                            <div>{{ queued_object["seller"]["name"] }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+    {% endif %}
+
+{% endblock %}
+{% block stylesheets %}
+{% endblock stylesheets %}
+{% block javascripts %}
+<script src="/static/js/common.js"></script>
+<script>
+{% if view_data %}
+let view_data = JSON.parse('{{view_data | tojson}}')
+{% else %}
+view_data = false;
+{% endif %}
+$(document).ready(
+function() {
+console.log(view_data);
+    var table = $('#report_data').DataTable();
+
+});
+</script>
+{% endblock %}

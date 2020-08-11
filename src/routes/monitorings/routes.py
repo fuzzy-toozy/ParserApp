@@ -1,4 +1,5 @@
 import flask
+import json
 
 from collections import OrderedDict
 
@@ -108,7 +109,8 @@ def edit_monitoring(project_id, entity_id):
                                  scan_intervals=SCAN_INTERVALS.INTERVALS_DICT,
                                  request_intervals=REQUEST_INTERVALS.INTERVALS_DICT,
                                  save_url=flask.url_for("monitorings.save_monitoring"),
-                                 redirect_url=flask.url_for("monitorings.monitorings_view", project_id=project_id))
+                                 redirect_url=flask.url_for("monitorings.monitorings_view", project_id=project_id),
+                                 scan_url=flask.url_for("force_scan_test", project_id=project_id, entity_id=entity_id))
 
 
 @monitorings.route("/monitorings_view/<project_id>", methods=['GET'])
@@ -142,7 +144,6 @@ def monitorings_view(project_id):
 @login_required
 def save_monitoring():
     request_json = flask.request.get_json()
-    print(request_json)
     products = request_json['products']
     sellers = request_json['sellers']
     monitoring_name = request_json['name']
@@ -257,7 +258,6 @@ def save_monitoring():
 @login_required
 def delete_monitoring():
     request_js = flask.request.get_json()
-    print(request_js)
     monitoring_id = request_js['id']
     project_id = request_js['project_id']
     with session_scope(current_user.username) as session:

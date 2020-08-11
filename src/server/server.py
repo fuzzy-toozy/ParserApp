@@ -23,6 +23,9 @@ from routes.projects.routes import projects
 from routes.products.routes import products
 from routes.parsers.routes import parsers
 from routes.monitorings.routes import monitorings
+from routes.reports.routes import reports
+
+from common.scanning import ScanningResult
 
 login_manager = LoginManager()
 
@@ -46,6 +49,7 @@ class ServerApp:
         self.flask_app.register_blueprint(products)
         self.flask_app.register_blueprint(parsers)
         self.flask_app.register_blueprint(monitorings)
+        self.flask_app.register_blueprint(reports)
 
         self.flask_app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
         self.flask_app.config["SECRET_KEY"] = SECRET_KEY
@@ -158,6 +162,63 @@ def logout_page():
     logout_user()
     return flask.redirect(flask.url_for("login_page"))
 
+@app.route("/scan_stats")
+@login_required
+def show_scan_stats():
+    view_data = main_app.get_scan_stats(current_user.username)
+    return flask.render_template("scan_stats.html", current_user=current_user,
+                                 view_data=view_data,
+                                 scan_state=view_data["state"])
+
+
+@app.route("/show_scan_res/<project_id>/<entity_id>", methods=['GET'])
+@login_required
+def scan_res(project_id, entity_id):
+    with session_scope(current_user.username) as session:
+        scan_results = session.query(BaseScanResult, MonitoredProduct, Product, Seller).filter(and_(BaseScanResult.project_id == project_id,
+                                                                                                    BaseScanResult.monitoring_id == entity_id,
+                                                                                                    MonitoredProduct.id == BaseScanResult.monitored_product_id,
+                                                                                                    MonitoredProduct.monitoring_id == entity_id,
+                                                                                                    MonitoredProduct.project_id == project_id,
+                                                                                                    Product.id == MonitoredProduct.product_id,
+                                                                                                    Seller.id == MonitoredProduct.seller_id)).all()
+        scan_results_js = {}
+        for result, mon_product, product, seller in scan_results:
+            current_result = scan_results_js.get(product.name)
+            if current_result is None:
+                current_result = {}
+                scan_results_js[product.name] = current_result
+
+            current_seller_result = current_result.get(seller.name)
+            if current_seller_result is None:
+                current_seller_result = {}
+                current_result[seller.name] = current_seller_result
+
+            current_seller_result["rescode"] = result.result_code
+            current_seller_result["result"] = result.scan_result
+            current_seller_result["error"] = result.scan_error
+            options_result = []
+            current_seller_result["options"] = options_result
+
+            scan_options_results = session.query(OptionScanResult, MonitoredOption, ProductOption).filter(
+                and_(OptionScanResult.project_id == project_id,
+                     OptionScanResult.monitoring_id == entity_id,
+                     MonitoredOption.monitored_product_id == mon_product.id,
+                     MonitoredOption.id == OptionScanResult.option_id,
+                     MonitoredOption.monitoring_id == entity_id,
+                     MonitoredOption.project_id == project_id)).outerjoin(ProductOption,
+                                                                          ProductOption.id == MonitoredOption.option_id).all()
+
+            for option_result, mon_option, product_option in scan_options_results:
+                current_option = {}
+                current_option["rescode"] = option_result.result_code
+                current_option["result"] = option_result.scan_result
+                current_option["error"] = option_result.scan_error
+                current_option["name"] = product_option.name
+                options_result.append(current_option)
+
+        return flask.jsonify(scan_results_js)
+
 
 @app.route("/force_scan/<project_id>/<entity_id>", methods=['GET'])
 @login_required
@@ -220,15 +281,15 @@ def do_gay_stuff(pqueue):
             result, msg = scaner.scan_product()
         break
 
-@app.route("/force_scan_test/<project_id>/<entity_id>", methods=['GET'])
+@app.route("/force_scan_test/<project_id>/<entity_id>", methods=['POST'])
 @login_required
 def force_scan_test(project_id, entity_id):
     main_app.add_scan_object(project_id, entity_id, current_user.username)
     return flask.jsonify(main_app.get_scan_stats(current_user.username))
 
-@app.route("/scan_stats", methods=['GET'])
+@app.route("/scan_statss", methods=['GET'])
 @login_required
-def scan_stats():
+def scan_statss():
     return flask.jsonify(main_app.get_scan_stats(current_user.username))
 
 
@@ -251,8 +312,7 @@ def login_page():
                 login_user(user)
                 return flask.redirect(flask.url_for("projects.main_form"))
 
-        flask.flash('Invalid username/password combination')
-        return flask.redirect(flask.url_for("main_form"))
+        return 'Invalid username/password combination'
 
     return flask.render_template('login.html', form=LoginForm())
 

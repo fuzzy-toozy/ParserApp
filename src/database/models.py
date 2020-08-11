@@ -1,7 +1,7 @@
 from .database import flask_db
 
 from sqlalchemy.types import *
-from sqlalchemy.orm import relationship
+from sqlalchemy_utcdatetime import UTCDateTime
 from sqlalchemy import Column, ForeignKey, UniqueConstraint, ForeignKeyConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine import Engine
@@ -213,6 +213,28 @@ class OptionScanResult(Base):
     scan_result = Column(Text(), index=False, unique=False, nullable=True)
     scan_error = Column(Text(), index=False, unique=False, nullable=True)
     result_code = Column(Integer, index=True, unique=False, nullable=False)
+
+
+class ScanReport(Base):
+    __tablename__ = "Scan_report"
+    __table_args__ = (UniqueConstraint("project_id", "name"),)
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(64), index=True, unique=False, nullable=False);
+    project_id = Column(Integer, ForeignKey(Project.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
+    monitoring_id = Column(Integer, ForeignKey(Monitoring.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
+    notifications_enabled = Column(Boolean, unique=False, default=True)
+    report_time = Column(String(64), unique=False, nullable=True)
+    days_of_week = Column(Text(), index=False, unique=False, nullable=True)
+
+
+class ScanReportObject(Base):
+    __tablename__ = "Scan_report_object"
+
+    id = Column(Integer, primary_key=True)
+    project_id = Column(Integer, ForeignKey(Project.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
+    report_id = Column(Integer, ForeignKey(ScanReport.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
+    monitored_product_id = Column(Integer, ForeignKey(MonitoredProduct.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
 
 
 class ScanStat(Base):

@@ -36,6 +36,8 @@ class ENTS:
     CREATE_MONITORING_OBJECT = 0x305
     CREATE_REPORT = 0x306
 
+    TEST_PARSER = 0x400
+
 
 class BreadcrumbsGenerator:
     def __init__(self):
@@ -47,11 +49,12 @@ class BreadcrumbsGenerator:
                             ENTS.PRODUCTS: ("Products", "products.products_view"),
                             ENTS.PROJECT: ("Project", "projects.project_view"),
                             ENTS.MONITORING: ("monitoring_id", "monitorings.monitoring_view_flat"),
-                            ENTS.REPORTS: ("Reports", "reports_view"),
+                            ENTS.REPORT: ("entity_id", "reports.report_view"),
+                            ENTS.REPORTS: ("Reports", "reports.reports_view"),
                             ENTS.EDIT_MONITORING: ("Edit monitoring", None),
                             ENTS.EDIT_SELLER: ("Edit seller", None),
                             ENTS.EDIT_PRODUCT: ("Edit product", None),
-                            ENTS.EDIT_PARSER: ("Edit parser", None),
+                            ENTS.EDIT_PARSER: ("Edit parser", "parsers.edit_parser"),
                             ENTS.EDIT_PROJECT: ("Edit project", None),
                             ENTS.EDIT_MONITORING_OBJECT: ("Edit monitoring object", None),
                             ENTS.EDIT_REPORT: ("Edit report", None),
@@ -61,7 +64,8 @@ class BreadcrumbsGenerator:
                             ENTS.CREATE_PROJECT: ("Create project", None),
                             ENTS.CREATE_PARSER: ("Create parser", None),
                             ENTS.CREATE_MONITORING_OBJECT: ("Create monitoring object", None),
-                            ENTS.CREATE_REPORT: ("Create report", None)
+                            ENTS.CREATE_REPORT: ("Create report", None),
+                            ENTS.TEST_PARSER: ("Test parser", None)
         }
 
     def init_user(self, user_name):
@@ -92,7 +96,7 @@ class BreadcrumbsGenerator:
                 current_entity = session.query(ent_model).filter(and_(ent_model.project_id == project_id,
                                                                       ent_model.id == ent_db_id)).first()
                 ent_name_id, entity_endp = self.api_names[ent_ep_id]
-                template_data = { "project_id": project_id,
+                template_data = {"project_id": project_id,
                                   ent_name_id: ent_db_id }
 
                 bc_result.append((current_entity.name, flask.url_for(entity_endp, **template_data)))

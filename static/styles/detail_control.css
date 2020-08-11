@@ -1,0 +1,12 @@
+td.details-control {
+    background: url('/static/images/details_open.png') no-repeat center center;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+}
+tr.shown td.details-control {
+    background: url('/static/images/details_close.png') no-repeat center center;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+}

@@ -8,6 +8,9 @@ Edit Monitoring
 {% endblock stylesheets %}
 {% block navigation_bar %}
     <li>
+        <a class="btn btn-app" onclick="post_force_scan('{{ scan_url }}')"><i class="fa fa-close"></i>Force Scan</a>
+    </li>
+    <li>
         <a class="btn btn-app" href="{{ redirect_url }}"><i class="fa fa-close"></i>Cancel</a>
     </li>
     <li>
