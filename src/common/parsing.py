@@ -5,6 +5,7 @@ import py_compile
 import uuid
 import importlib.util
 import json
+import sys
 
 from common.settings import PARSERS_DIR
 
@@ -67,7 +68,8 @@ def run_parser(dom, module, parameter):
 
 
 def make_parser_module(parser_code, parser_name, parsers_dir):
-    parser_filename = str(uuid.uuid4()) + ".py"
+    base_name = str(uuid.uuid4())
+    parser_filename = base_name + ".py"
     parser_abspath = os.path.join(parsers_dir, parser_filename)
     parser_module = None
     error_message = None
@@ -93,8 +95,9 @@ def make_parser_module(parser_code, parser_name, parsers_dir):
         except OSError as e:
             if e.errno != errno.ENOENT:
                 raise
-
-    return parser_module, error_message, parser_code
+    pycache_path = os.path.join(parsers_dir, "__pycache__", base_name)
+    bytecode_path = "%s.%s.pyc" % (pycache_path, sys.implementation.cache_tag)
+    return parser_module, error_message, parser_code, bytecode_path
 
 
 class ParsingResult:
@@ -117,11 +120,12 @@ def do_parse(parser_db_obj, parser_parameter, page_dom):
     parser_module = None
     parser_code = None
     label_message = "Parser execution failed:"
+    bytecode_path = None
     if not parser_db_obj:
         parser_result = "No parser found in database"
         parser_exec_res = ParsingResult.NO_PARSER
     elif parser_db_obj.code:
-        parser_module, parser_result, parser_code = make_parser_module(parser_db_obj.code, parser_db_obj.name, PARSERS_DIR)
+        parser_module, parser_result, parser_code, bytecode_path = make_parser_module(parser_db_obj.code, parser_db_obj.name, PARSERS_DIR)
     else:
         parser_exec_res = ParsingResult.NO_CODE
         parser_result = "No parser code supplied"
@@ -144,5 +148,11 @@ def do_parse(parser_db_obj, parser_parameter, page_dom):
     elif parser_db_obj:
         parser_exec_res = ParsingResult.MODULE_FAILED
         label_message = "Couldn't load parser module for parser '%s'" % parser_db_obj.name
+
+    if bytecode_path:
+        try:
+            os.remove(bytecode_path)
+        except OSError as e:
+            print("Failed removing parser cache file: '%s'. Error: %s" % (bytecode_path, e))
 
     return parser_exec_res, parser_result, label_message, parser_code

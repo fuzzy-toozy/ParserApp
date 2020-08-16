@@ -2,7 +2,7 @@ function prettify_json(json_string) {
 if (! json_string) {
     return "";
 }
-let removed_whites = json_string.replace(/\s/g,'');
+    let removed_whites = json_string.trim()//json_string.replace(/\s/g,'');
 if (removed_whites) {
     removed_whites = removed_whites.replace(/^"/,'');
     removed_whites = removed_whites.replace(/"$/,'');

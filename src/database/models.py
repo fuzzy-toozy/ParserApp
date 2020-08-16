@@ -200,6 +200,7 @@ class BaseScanResult(Base):
     scan_result = Column(Text(), index=False, unique=False, nullable=True)
     scan_error = Column(Text(), index=False, unique=False, nullable=True)
     result_code = Column(Integer, index=True, unique=False, nullable=False)
+    last_scan_time = Column(Integer, index=True, unique=False, nullable=False)
 
 
 class OptionScanResult(Base):
@@ -213,6 +214,7 @@ class OptionScanResult(Base):
     scan_result = Column(Text(), index=False, unique=False, nullable=True)
     scan_error = Column(Text(), index=False, unique=False, nullable=True)
     result_code = Column(Integer, index=True, unique=False, nullable=False)
+    last_scan_time = Column(Integer, index=True, unique=False, nullable=False)
 
 
 class ScanReport(Base):
@@ -228,13 +230,22 @@ class ScanReport(Base):
     days_of_week = Column(Text(), index=False, unique=False, nullable=True)
 
 
-class ScanReportObject(Base):
-    __tablename__ = "Scan_report_object"
+class ScanReportSeller(Base):
+    __tablename__ = "Scan_report_seller"
 
     id = Column(Integer, primary_key=True)
     project_id = Column(Integer, ForeignKey(Project.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
     report_id = Column(Integer, ForeignKey(ScanReport.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
-    monitored_product_id = Column(Integer, ForeignKey(MonitoredProduct.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
+    monitoring_seller_id = Column(Integer, ForeignKey(MonitoringSeller.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
+
+
+class ScanReportProduct(Base):
+    __tablename__ = "Scan_report_product"
+
+    id = Column(Integer, primary_key=True)
+    project_id = Column(Integer, ForeignKey(Project.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
+    report_id = Column(Integer, ForeignKey(ScanReport.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
+    monitoring_product_id = Column(Integer, ForeignKey(MonitoringProduct.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
 
 
 class ScanStat(Base):

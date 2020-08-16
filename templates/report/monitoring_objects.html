@@ -1,15 +1,23 @@
-{% if seller_to_products %}
-{% for seller_name, seller_data in seller_to_products: %}
-<label value="">Seller {{seller_name}} products:</label>
- <div class="form-group">
-    <select id="seller_select_{{seller_data['seller_id']}}" seller_id="{{seller_data['seller_id']}}" class="form-control select2"
-            style="width: 100%" multiple="" data-placeholder="Select product">
-    {% for object_id, product in seller_data['products'] %}
-    <option monitored_object_id="{{object_id}}" value="{{object_id}}">{{ product.name }}</option>
+{% if sellers_data and products_data %}
+<label value="">Sellers:</label>
+<div class="form-group">
+    <select id="sellers_select" class="form-control select2"
+            style="width: 100%" multiple="" data-placeholder="Select seller">
+    {% for object_id, seller_name in sellers_data %}
+    <option monitoring_seller_id="{{object_id}}" value="{{object_id}}">{{ seller_name }}</option>
     {% endfor %}
     </select>
 </div>
-{% endfor %}
+
+<label value="">Products:</label>
+<div class="form-group">
+    <select id="products_select" class="form-control select2"
+            style="width: 100%" multiple="" data-placeholder="Select product">
+    {% for object_id, product_name in products_data %}
+    <option monitoring_product_id="{{object_id}}" value="{{object_id}}">{{ product_name }}</option>
+    {% endfor %}
+    </select>
+</div>
 {% else %}
 No monitoring objects created
 {% endif %}

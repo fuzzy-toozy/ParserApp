@@ -156,11 +156,11 @@ function remove_product(project_id, product_id, product_name) {
 }
 
 function tableToJSON(table) {
-  var obj = {};
+  var obj = [];
   var row, rows = table.rows;
   for (var i=1, iLen=rows.length - 1; i<iLen; i++) {
     row = rows[i];
-    obj[row.cells[0].getAttribute("value")] = row.getAttribute("value");
+      obj.push([row.cells[0].getAttribute("value"), row.getAttribute("value")]);
   }
   return obj;
 }

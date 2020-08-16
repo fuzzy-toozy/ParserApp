@@ -1,10 +1,11 @@
 import flask
 import json
+from datetime import datetime
 
 from flask_login import login_required, current_user
 from flask import Blueprint
 
-from sqlalchemy import and_, desc
+from sqlalchemy import and_, desc, asc
 
 from database.models import *
 from database.users import session_scope
@@ -51,16 +52,45 @@ def delete_report():
     return flask.redirect(flask.url_for("reports.reports_view", project_id=project_id))
 
 
+
 @reports.route("/report_view/<project_id>/<entity_id>", methods=['GET'])
 @login_required
 def report_view(project_id, entity_id):
     bc_data = bc_generator.get_breadcrumbs_data(current_user.username, project_id, None, [ENTS.REPORTS],
                                                 ScanReport, entity_id, ENTS.REPORT)
     with session_scope(current_user.username) as session:
-        report_objects = session.query(ScanReportObject).filter(ScanReportObject.report_id == entity_id,
-                                                                ScanReportObject.project_id == project_id).all()
+        scan_report = session.query(ScanReport).filter(and_(ScanReport.id == entity_id,
+                                                            ScanReport.project_id == project_id)).first()
 
-        report_monitored_products = [report_object.monitored_product_id for report_object in report_objects]
+        monitoring_data = session.query(ScanReportProduct, ScanReportSeller, Product, Seller).filter(and_(ScanReportProduct.report_id == entity_id,
+                                                                                                          ScanReportSeller.report_id == entity_id,
+                                                                                                          ScanReportProduct.project_id == project_id,
+                                                                                                          ScanReportSeller.project_id == project_id,
+                                                                                                          MonitoringProduct.monitoring_id == scan_report.monitoring_id,
+                                                                                                          MonitoringProduct.id == ScanReportProduct.monitoring_product_id,
+                                                                                                          MonitoringSeller.id == ScanReportSeller.monitoring_seller_id,
+                                                                                                          Product.id == MonitoringProduct.product_id,
+                                                                                                          Seller.id == MonitoringSeller.seller_id)).all()
+
+        print(monitoring_data)
+
+        monitored_products = session.query(MonitoredProduct).filter(and_(MonitoredProduct.project_id == project_id,
+                                                                         MonitoredProduct.monitoring_id == scan_report.monitoring_id,
+                                                                         ScanReportProduct.monitoring_product_id == MonitoredProduct.monitoring_product_id,
+                                                                         ScanReportSeller.monitoring_seller_id == MonitoredProduct.monitoring_seller_id)).all()
+
+        mon_prod_check = {}
+        mon_prod_exists = {}
+
+        for mon_prod in monitored_products:
+            mon_sel = mon_prod_exists.get(mon_prod.product_id)
+            if mon_sel is None:
+                mon_sel = {}
+                mon_prod_exists[mon_prod.product_id] = mon_sel
+            mon_sel[mon_prod.seller_id] = True
+
+        report_monitored_products = [x.id for x in monitored_products]
+
         scan_results = session.query(BaseScanResult, MonitoredProduct, Product, Seller).filter(
             and_(BaseScanResult.project_id == project_id,
                  BaseScanResult.monitored_product_id.in_(report_monitored_products),
@@ -69,13 +99,19 @@ def report_view(project_id, entity_id):
                  Product.id == MonitoredProduct.product_id,
                  Seller.id == MonitoredProduct.seller_id)).all()
 
+        print("Scan results: %s" % scan_results)
         scan_results_js = {}
         for result, mon_product, product, seller in scan_results:
+            mon_prod_data = mon_prod_check.get(mon_product.product_id)
+            if mon_prod_data is None:
+                mon_prod_data = {}
+                mon_prod_check[mon_product.product_id] = mon_prod_data
+            mon_prod_data[mon_product.seller_id] = True
             current_result = scan_results_js.get(product.name)
             if current_result is None:
                 current_result = {}
-                product_options = session.query(ProductOption).filter(ProductOption.product_id == product.id).all()
-                options_struct = {x.name: "" for x in product_options}
+                product_options = session.query(ProductOption).filter(ProductOption.product_id == product.id).order_by(ProductOption.id.asc()).all()
+                options_struct = [x.name for x in product_options]
                 current_result["all_opts"] = options_struct
                 sellers_data = {}
                 current_result["sellers"] = sellers_data
@@ -91,6 +127,8 @@ def report_view(project_id, entity_id):
             current_seller_result["rescode"] = result.result_code
             current_seller_result["result"] = result.scan_result
             current_seller_result["error"] = result.scan_error
+            current_seller_result["time"] = datetime.utcfromtimestamp(result.last_scan_time).strftime('%X %Zon %b %d, %Y') + " UTC"
+            current_seller_result["url"] = mon_product.url if mon_product.url else ""
             options_result = {}
             current_seller_result["options"] = options_result
 
@@ -109,7 +147,56 @@ def report_view(project_id, entity_id):
                 current_option["rescode"] = option_result.result_code
                 current_option["result"] = option_result.scan_result
                 current_option["error"] = option_result.scan_error
+                current_option["time"] = datetime.utcfromtimestamp(option_result.last_scan_time).strftime('%X %Zon %b %d, %Y') + " UTC"
                 options_result[product_option.name] = current_option
+
+        for s_product, s_seller, product, seller in monitoring_data:
+            print("pname: %s sname: %s" % (product.name, seller.name))
+            product_exists = mon_prod_check.get(product.id)
+            if product_exists:
+                seller_exists = product_exists.get(seller.id)
+                if product_exists and seller_exists:
+                    continue
+
+            product_exists = mon_prod_exists.get(product.id)
+            seller_exists = False
+            if product_exists:
+                seller_exists = product_exists.get(seller.id)
+
+            seller_data = dict()
+
+            seller_data["rescode"] = -50 if seller_exists else -100
+            seller_data["result"] = ""
+            seller_data["error"] = ""
+            seller_data["time"] = ""
+            seller_data["url"] = ""
+            seller_data["options"] = {}
+
+            seller_object = dict()
+            seller_object[seller.name] = seller_data
+
+            product_to_update = scan_results_js.get(product.name)
+
+            if product_to_update is not None:
+                sellers_to_update = product_to_update.get("sellers")
+                if sellers_to_update is None:
+                    sellers_main_object = {}
+                    sellers_main_object.update(seller_object)
+                    product_to_update["sellers"] = sellers_main_object
+                else:
+                    sellers_to_update.update(seller_object)
+            else:
+                product_data = dict()
+                sellers_data = dict()
+                product_data["sellers"] = sellers_data
+                sellers_data.update(seller_object)
+                product_options = session.query(ProductOption).filter(
+                    ProductOption.product_id == product.id).order_by(ProductOption.id.asc()).all()
+                options_struct = [x.name for x in product_options]
+                product_data["all_opts"] = options_struct
+
+                scan_results_js[product.name] = product_data
+
 
         print("FINAL SHIT\n%s" % scan_results_js)
 
@@ -172,11 +259,25 @@ def get_monitored_products_and_sellers(username, project_id, monitoring_id):
 @reports.route("/get_monitoring_objects/<project_id>/<monitoring_id>", methods=['POST'])
 @login_required
 def get_monitoring_objects(project_id, monitoring_id):
-    seller_to_products = get_monitored_products_and_sellers(current_user.username, project_id, monitoring_id)
-    if seller_to_products:
-        return flask.render_template("report/monitoring_objects.html", seller_to_products=seller_to_products)
-    else:
-        return "No monitoring objects created"
+    with session_scope(current_user.username) as session:
+        monitoring_sellers = session.query(MonitoringSeller, Seller).filter(and_(MonitoringSeller.monitoring_id == monitoring_id,
+                                                                                 MonitoringSeller.project_id == project_id,
+                                                                                 Seller.id == MonitoringSeller.seller_id)).order_by(desc(Seller.id)).all()
+
+        monitoring_products = session.query(MonitoringProduct, Product).filter(and_(MonitoringProduct.monitoring_id == monitoring_id,
+                                                                                    MonitoringProduct.project_id == project_id,
+                                                                                    Product.id == MonitoringProduct.product_id)).order_by(desc(Product.id)).all()
+        sellers_data = []
+        products_data = []
+        for m_seller, seller in monitoring_sellers:
+            sellers_data.append((m_seller.id, seller.name))
+
+        for m_product, product in monitoring_products:
+            products_data.append((m_product.id, product.name))
+
+        return flask.render_template("report/monitoring_objects.html",
+                                     sellers_data=sellers_data,
+                                     products_data=products_data)
 
 
 @reports.route("/create_report/<project_id>/new_entity", methods=['GET'])
@@ -184,10 +285,7 @@ def get_monitoring_objects(project_id, monitoring_id):
 def create_report(project_id):
     bc_data = bc_generator.get_breadcrumbs_data(current_user.username, project_id, ENTS.EDIT_REPORT, [ENTS.REPORTS])
     with session_scope(current_user.username, True) as session:
-        current_products = session.query(Product).filter(Product.project_id == int(project_id)).all()
-        current_sellers = session.query(Seller).filter(Seller.project_id == int(project_id)).all()
         project_monitorings = session.query(Monitoring).filter(Monitoring.project_id == int(project_id)).all()
-        seltop = get_monitored_products_and_sellers(current_user.username, project_id, 5)
 
     return flask.render_template("report/edit_report.html",
                                  current_user=current_user,
@@ -206,34 +304,34 @@ def create_report(project_id):
 def edit_report(project_id, entity_id):
     bc_data = bc_generator.get_breadcrumbs_data(current_user.username, project_id, ENTS.EDIT_REPORT, [ENTS.REPORTS])
     with session_scope(current_user.username, True) as session:
-        current_products = session.query(Product).filter(Product.project_id == int(project_id)).all()
-        current_sellers = session.query(Seller).filter(Seller.project_id == int(project_id)).all()
         project_monitorings = session.query(Monitoring).filter(Monitoring.project_id == int(project_id)).all()
         seltop = get_monitored_products_and_sellers(current_user.username, project_id, 5)
 
         scan_report = session.query(ScanReport).filter(and_(ScanReport.project_id == project_id,
                                                             ScanReport.id == entity_id)).first()
 
-        scan_objects = session.query(ScanReportObject).filter(and_(ScanReportObject.project_id == project_id,
-                                                                   ScanReportObject.report_id == scan_report.id)).all()
+        scan_sellers = session.query(ScanReportSeller).filter(and_(ScanReportSeller.project_id == project_id,
+                                                                   ScanReportSeller.report_id == scan_report.id)).all()
 
-        selected_object_ids = {scan_object.monitored_product_id: 0 for scan_object in scan_objects}
+        scan_products = session.query(ScanReportProduct).filter(and_(ScanReportProduct.project_id == project_id,
+                                                                     ScanReportProduct.report_id == scan_report.id)).all()
+
+        selected_sellers_ids = {scan_object.monitoring_seller_id: 0 for scan_object in scan_sellers}
+        selected_products_ids = {scan_object.monitoring_product_id: 0 for scan_object in scan_products}
 
         view_data = {"monitoring": scan_report.monitoring_id,
-                     "objects": selected_object_ids,
+                     "sellers": selected_sellers_ids,
+                     "products": selected_products_ids,
                      "timestamp": scan_report.report_time,
                      "notify": scan_report.notifications_enabled,
                      "days": scan_report.days_of_week,
                      "name": scan_report.name}
-        view_data = view_data
-
 
     return flask.render_template("report/edit_report.html",
                                  current_user=current_user,
                                  project_id=project_id,
                                  entity_id=scan_report.id,
                                  view_data=view_data,
-                                 selected_objects=selected_object_ids,
                                  project_monitorings=project_monitorings,
                                  seller_to_products=seltop,
                                  bc_data=bc_data,
@@ -258,6 +356,14 @@ def save_report():
 
     print(request_json)
 
+    sellers_objects_to_insert = set()
+    for monitoring_seller_id in monitored_objects["sellers"]:
+        sellers_objects_to_insert.add(monitoring_seller_id)
+
+    products_objects_to_insert = set()
+    for monitoring_product_id in monitored_objects["products"]:
+        products_objects_to_insert.add(monitoring_product_id)
+
     with session_scope(current_user.username) as session:
         if report_id == "new_entity":
             current_report = ScanReport(project_id=project_id,
@@ -269,12 +375,6 @@ def save_report():
 
             session.add(current_report)
             session.flush()
-
-            objects_to_insert = set()
-            for seller_id, seller_products in monitored_objects.items():
-                for monitored_object_id in seller_products:
-                    objects_to_insert.add(monitored_object_id)
-
         else:
             current_report = session.query(ScanReport).filter(and_(ScanReport.id == report_id,
                                                                    ScanReport.project_id == project_id)).first()
@@ -285,28 +385,39 @@ def save_report():
             current_report.notifications_enabled = report_enabled
             current_report.monitoring_id = monitoring_id
 
-            objects_result = session.query(ScanReportObject).filter(and_(ScanReportObject.report_id == ScanReport.id,
-                                                                         ScanReportObject.project_id == project_id)).all()
+            monitoring_sellers_db = session.query(ScanReportSeller).filter(and_(ScanReportSeller.report_id == ScanReport.id,
+                                                                                ScanReportSeller.project_id == project_id)).all()
 
-            db_monitored_objects = {scan_object.monitored_product_id for scan_object in objects_result}
-            request_monitored_objects = set()
-            for seller_id, seller_products in monitored_objects.items():
-                for monitored_object_id in seller_products:
-                    request_monitored_objects.add(monitored_object_id)
+            monitoring_products_db = session.query(ScanReportProduct).filter(and_(ScanReportProduct.report_id == ScanReport.id,
+                                                                                  ScanReportProduct.project_id == project_id)).all()
 
-            objects_to_delete = db_monitored_objects - request_monitored_objects
-            objects_to_insert = request_monitored_objects - db_monitored_objects
+            db_monitored_sellers = {scan_object.monitoring_seller_id for scan_object in monitoring_sellers_db}
+            db_monitored_products = {scan_object.monitoring_product_id for scan_object in monitoring_products_db}
 
-            for object_id in objects_to_delete:
-                session.query(ScanReportObject).filter(and_(ScanReportObject.project_id == project_id,
-                                                            ScanReportObject.report_id == current_report.id,
-                                                            ScanReportObject.monitored_product_id == object_id)).delete()
+            sellers_to_delete = db_monitored_sellers - sellers_objects_to_insert
+            sellers_objects_to_insert = sellers_objects_to_insert - db_monitored_sellers
+            products_to_delete = db_monitored_products - products_objects_to_insert
+            products_objects_to_insert = products_objects_to_insert - db_monitored_products
 
-        for object_id in objects_to_insert:
-            new_report_object = ScanReportObject(project_id=project_id,
+            for object_id in sellers_to_delete:
+                session.query(ScanReportSeller).filter(and_(ScanReportSeller.project_id == project_id,
+                                                            ScanReportSeller.report_id == current_report.id,
+                                                            ScanReportSeller.monitoring_seller_id == object_id)).delete()
+            for object_id in products_to_delete:
+                session.query(ScanReportProduct).filter(and_(ScanReportProduct.project_id == project_id,
+                                                             ScanReportProduct.report_id == current_report.id,
+                                                             ScanReportProduct.monitoring_product_id == object_id)).delete()
+
+        for object_id in sellers_objects_to_insert:
+            new_report_object = ScanReportSeller(project_id=project_id,
                                                  report_id=current_report.id,
-                                                 monitored_product_id=object_id)
+                                                 monitoring_seller_id=object_id)
+            session.add(new_report_object)
 
+        for object_id in products_objects_to_insert:
+            new_report_object = ScanReportProduct(project_id=project_id,
+                                                  report_id=current_report.id,
+                                                  monitoring_product_id=object_id)
             session.add(new_report_object)
 
     return "OK"

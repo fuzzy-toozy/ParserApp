@@ -2,6 +2,7 @@ import traceback
 import os
 import errno
 import logging
+import time
 
 from datetime import datetime
 from common import parsing
@@ -71,6 +72,7 @@ class MonitoringScanner:
                 self.project = project_and_monitoring[1]
 
         self.request_interval = self.monitoring.request_interval
+        self.update_interval = self.monitoring.update_interval
 
     def count_retry(self):
         if self.should_retry():
@@ -168,53 +170,58 @@ class MonitoringScanner:
                          MonitoredProduct.id == prod_id)).outerjoin(Parser, Parser.id == MonitoredProduct.parser_id).first()
 
                 try:
-                    base_scan_res = session.query(BaseScanResult).filter(and_(BaseScanResult.project_id==monitored_product.project_id,
-                                                                              BaseScanResult.monitored_product_id==monitored_product.id,
-                                                                              BaseScanResult.monitoring_id==monitored_product.monitoring_id)).first()
+                    base_scan_res = session.query(BaseScanResult).filter(and_(BaseScanResult.project_id == monitored_product.project_id,
+                                                                              BaseScanResult.monitored_product_id == monitored_product.id,
+                                                                              BaseScanResult.monitoring_id == monitored_product.monitoring_id)).first()
                     if not monitored_product:
                         return ScanningResult.WARN, "No monitored product found in database"
 
                     if stop_event.is_set():
                         return ScanningResult.INTERRUPTED, "Scanning interrupted"
+                    scan_time = time.time()
                     page_dom, parser_result = parsing.get_page_dom(monitored_product.url)
-                    if page_dom is None:
+
+                    if page_dom:
+                        parser_exec_status, parser_result, _, _ = parsing.do_parse(base_parser,
+                                                                                   monitored_product.parser_parameter,
+                                                                                   page_dom)
+                        f_parser_result = parser_result if parser_exec_status == ScanningResult.OK else ""
+                        f_parser_error = parser_result if not f_parser_result else ""
+                        if not base_scan_res:
+                            session.add(BaseScanResult(project_id=monitored_product.project_id,
+                                                       monitored_product_id=monitored_product.id,
+                                                       monitoring_id=monitored_product.monitoring_id,
+                                                       scan_result=f_parser_result,
+                                                       scan_error=f_parser_error,
+                                                       result_code=parser_exec_status,
+                                                       last_scan_time=scan_time
+                                                       ))
+                        else:
+                            if f_parser_result:
+                                base_scan_res.scan_result = f_parser_result
+                            base_scan_res.scan_error = f_parser_error
+                            base_scan_res.result_code = parser_exec_status
+                            base_scan_res.last_scan_time = scan_time
+
+                        scan_stats.set_base_scan_data(monitored_product.id, base_parser, parser_exec_status,
+                                                      f_parser_result, f_parser_error)
+                    else:
                         if not base_scan_res:
                             session.add(BaseScanResult(project_id=monitored_product.project_id,
                                                        monitored_product_id=monitored_product.id,
                                                        monitoring_id=monitored_product.monitoring_id,
                                                        scan_result="",
                                                        scan_error=parser_result,
-                                                       result_code=ScanningResult.DOM_FAILED
+                                                       result_code=ScanningResult.DOM_FAILED,
+                                                       last_scan_time=scan_time
                                                        ))
                         else:
-                            base_scan_res.scan_result = ""
                             base_scan_res.scan_error = parser_result
                             base_scan_res.result_code = ScanningResult.DOM_FAILED
+                            base_scan_res.last_scan_time = scan_time
 
-                        scan_stats.set_base_scan_data(monitored_product.id, base_parser, ScanningResult.DOM_FAILED, "", parser_result)
-                        return ScanningResult.DOM_FAILED, parser_result
-
-                    parser_exec_status, parser_result, _, _ = parsing.do_parse(base_parser,
-                                                                               monitored_product.parser_parameter,
-                                                                               page_dom)
-                    f_parser_result = parser_result if parser_exec_status == ScanningResult.OK else ""
-                    f_parser_error = parser_result if not f_parser_result else ""
-                    if not base_scan_res:
-                        session.add(BaseScanResult(project_id=monitored_product.project_id,
-                                                   monitored_product_id=monitored_product.id,
-                                                   monitoring_id=monitored_product.monitoring_id,
-                                                   scan_result=f_parser_result,
-                                                   scan_error=f_parser_error,
-                                                   result_code=parser_exec_status
-                                                   ))
-                    else:
-                        base_scan_res.scan_result = f_parser_result
-                        base_scan_res.scan_error = f_parser_error
-                        base_scan_res.result_code = parser_exec_status
-
-                    scan_stats.set_base_scan_data(monitored_product.id, base_parser, parser_exec_status,
-                                                  f_parser_result, f_parser_error)
-
+                        scan_stats.set_base_scan_data(monitored_product.id, base_parser, ScanningResult.DOM_FAILED,
+                                                      "", parser_result)
                 except Exception as ex:
                     err_msg = str(ex)
                     scan_stats.set_base_scan_data(monitored_product.id, base_parser, ScanningResult.DATABASE_ERROR, "", err_msg)
@@ -231,9 +238,14 @@ class MonitoringScanner:
                                                                                        Parser.id == MonitoredOption.parser_id).all()
 
                     for monitored_option, option_parser, product_option in monitored_options_data:
-                        option_parser_exec_status, option_parser_result, _, _ = parsing.do_parse(option_parser,
-                                                                                                 monitored_option.parser_parameter,
-                                                                                                 page_dom)
+                        if page_dom:
+                            option_parser_exec_status, option_parser_result, _, _ = parsing.do_parse(option_parser,
+                                                                                                     monitored_option.parser_parameter,
+                                                                                                     page_dom)
+                        else:
+                            option_parser_exec_status = ScanningResult.DOM_FAILED
+                            option_parser_result = parser_result
+
                         f_option_parser_result = option_parser_result if option_parser_exec_status == ScanningResult.OK else ""
                         f_option_parser_error = option_parser_result if not f_option_parser_result else ""
 
@@ -251,11 +263,14 @@ class MonitoringScanner:
                                                              monitored_product_id=monitored_option.monitored_product_id,
                                                              scan_result=f_option_parser_result,
                                                              scan_error=f_option_parser_error,
-                                                             result_code=option_parser_exec_status))
+                                                             result_code=option_parser_exec_status,
+                                                             last_scan_time=scan_time))
                             else:
-                                option_scan_res.scan_result = f_option_parser_result
+                                if f_option_parser_result:
+                                    option_scan_res.scan_result = f_option_parser_result
                                 option_scan_res.scan_error = f_option_parser_error
                                 option_scan_res.result_code = option_parser_exec_status
+                                option_scan_res.last_scan_time = scan_time
                             scan_stats.set_option_scan_data(monitored_product.id, product_option.name, option_parser,
                                                             option_parser_exec_status, f_option_parser_result, f_option_parser_error)
                         except Exception as ex:
@@ -269,7 +284,6 @@ class MonitoringScanner:
                     traceback.print_exc()
                     return ScanningResult.DATABASE_ERROR, str(ex)
         except Exception as ex:
-            print("WOOOOPS\n")
             print(str(ex))
             traceback.print_exc()
             return ScanningResult.DATABASE_ERROR, str(ex)
@@ -445,11 +459,11 @@ class ScanStats:
         self.scanned_queue = {}
         self.current_monitoring = None
         self.current_project = None
-        self.objects_scanned  = 0
+        self.objects_scanned = 0
         self.start_time = 0
 
 
-def do_scan_worker(queue, stats_queue, exit_event):
+def do_scan_worker(queue, stats_queue, exit_event, user, scan_processor):
     scan_stats = ScanStats(stats_queue)
     signal(SIGUSR1, scan_stats.worker_stats_sh)
     while True:
@@ -468,13 +482,26 @@ def do_scan_worker(queue, stats_queue, exit_event):
         except Empty:
             if exit_event.is_set():
                 break
-            continue
         except Exception as ex:
             print("Something went wrong while gay scan: %s" % str(ex))
             continue
         finally:
             scan_stats.reset()
 
+        try:
+            with session_scope(user) as session:
+                all_monitorings = session.query(Monitoring).all()
+                for monitoring in all_monitorings:
+                    if exit_event.is_set():
+                        break
+                    if monitoring.enabled:
+                        base_result = session.query(BaseScanResult).filter(BaseScanResult.monitoring_id == monitoring.id).first()
+                        if base_result and time.time() >= base_result.last_scan_time + monitoring.update_interval * 60:
+                            print("STARTING SCAN FOR MONITORING %s" % monitoring.name)
+                            scan_processor.add_scan_object(monitoring.project_id, monitoring.id, user)
+
+        except Exception as ex:
+            print("Something went wrong while gay scan on time: %s" % str(ex))
 
 class ScanProcessor:
 
@@ -532,7 +559,7 @@ class ScanProcessor:
             user_data[ScanProcessor.QUEUE] = user_queue
             user_event = Event()
             user_data[ScanProcessor.EXIT_EVENT] = user_event
-            scan_process = Process(target=do_scan_worker, args=(user_queue, stats_queue, user_event))
+            scan_process = Process(target=do_scan_worker, args=(user_queue, stats_queue, user_event, user, self))
             user_data[ScanProcessor.PROCESS] = scan_process
             user_data[ScanProcessor.STATS_QUEUE] = stats_queue
             scan_process.daemon = True

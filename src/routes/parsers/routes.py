@@ -30,7 +30,7 @@ def validate_parser(parser_file, parser_name, parsers_dir):
         response_dict["message"] = str(ex)
 
     if parser_code:
-        parser_module, err_msg, parser_code = parsing.make_parser_module(parser_code, parser_name, parsers_dir)
+        parser_module, err_msg, parser_code, _ = parsing.make_parser_module(parser_code, parser_name, parsers_dir)
         if parser_module:
             validation_res, err = parsing.check_required_function(parser_module)
             if validation_res:

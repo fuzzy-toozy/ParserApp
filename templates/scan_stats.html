@@ -103,7 +103,7 @@ Reports View
 <script src="/static/js/common.js"></script>
 <script>
 {% if view_data %}
-let view_data = JSON.parse('{{view_data | tojson}}')
+let view_data = {{view_data | tojson | safe}}
 {% else %}
 view_data = false;
 {% endif %}

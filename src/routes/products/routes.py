@@ -79,7 +79,7 @@ def save_product():
             id_to_option_received = {}
             received_existing_options_set = set()
             options_to_insert = []
-            for option_name, option_id in product_options['rest'].items():
+            for option_name, option_id in product_options['rest']:
                 if int(option_id) != -1:
                     received_existing_options_set.add(int(option_id))
                     id_to_option_received[int(option_id)] = option_name
@@ -113,7 +113,7 @@ def save_product():
             session.add(new_product)
             session.flush()
 
-            for option_name, option_id in product_options['rest'].items():
+            for option_name, option_id in product_options['rest']:
                 session.add(ProductOption(name=option_name, product_id=new_product.id, project_id=project_id))
 
     return "OK"

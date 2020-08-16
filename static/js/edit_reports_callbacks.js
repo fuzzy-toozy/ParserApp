@@ -1,25 +1,26 @@
 let change_callback = function(){};
 
-function set_monitored_objects(view_data) {
-        let set_selected_monitorings = function () {
-            let view_objects = view_data["objects"];
-            let select_nodes = $('[id^="seller_select_"]');
-             for (let idx = 0; idx < select_nodes.length; ++idx) {
-                let select_node = select_nodes[idx];
-                let selected_vals = [];
-                $("#" + select_node.id + " option").each(function() {
-                    if (Number(this.value) in view_objects) {
-                        selected_vals.push(this.value);
-                    }
-                });
-                $(select_node).val(selected_vals).trigger("change");
-            }
-        };
-
-        change_callback = set_selected_monitorings;
-        $("#monitoring_select").val(view_data["monitoring"]).trigger("change");
+function set_select(data_ids, select_id) {
+    let select_node = $("#" + select_id);
+    let selected_vals = [];
+    console.log("#" + select_node.attr("id") + " option");
+    $("#" + select_node.attr("id") + " option").each(function() {
+        if (Number(this.value) in data_ids) {
+                selected_vals.push(this.value);
+        }
+    });
+    $(select_node).val(selected_vals).trigger("change");
 }
 
+function set_monitored_objects(view_data) {
+        let set_selected_data = function () {
+            set_select(view_data["sellers"], "sellers_select");
+            set_select(view_data["products"], "products_select");
+        };
+
+        change_callback = set_selected_data;
+        $("#monitoring_select").val(view_data["monitoring"]).trigger("change");
+}
 
 function set_timepicker(timestamp) {
     $('#datetime_input').val(timestamp);
@@ -82,26 +83,24 @@ function monitoring_changed(selected_option, post_url)
     })
 }
 
+function get_select_data(select_id, option_attribute) {
+    let seller_select_node = $("#" + select_id);
+    let selected_values = $(seller_select_node).find(":selected");
+
+    let monitoring_objects_ids = [];
+    for(let sel_idx = 0; sel_idx < selected_values.length; ++sel_idx) {
+        let selected_value = selected_values[sel_idx];
+        monitoring_objects_ids.push(Number(selected_value.getAttribute(option_attribute)));
+    }
+
+    return monitoring_objects_ids;
+}
+
+
 function save_report()
 {
-    let monitored_objects = $('[id^="seller_select_"]');
-    let monitored_objects_data = {};
-
-    for (let idx = 0; idx < monitored_objects.length; ++idx) {
-        let seller_select_node = monitored_objects[idx];
-        let seller_id = seller_select_node.getAttribute("seller_id");
-        let selected_values = $(seller_select_node).find(":selected");
-
-        let monitored_objects_ids = [];
-        for(let sel_idx = 0; sel_idx < selected_values.length; ++sel_idx) {
-            let selected_value = selected_values[sel_idx];
-            monitored_objects_ids.push(Number(selected_value.getAttribute("monitored_object_id")));
-        }
-
-        if (monitored_objects_ids.length > 0) {
-            monitored_objects_data[seller_id] = monitored_objects_ids;
-        }
-    }
+    let selected_sellers = get_select_data("sellers_select", "monitoring_seller_id")
+    let selected_products = get_select_data("products_select", "monitoring_product_id")
 
     let days_checkboxes = $('[id^="day_of_week"]');
     let checked_days = [];
@@ -113,7 +112,7 @@ function save_report()
     }
 
     let report_data_object = {};
-    report_data_object["monitoring_objects"] = monitored_objects_data;
+    report_data_object["monitoring_objects"] = { "sellers": selected_sellers, "products": selected_products };
     report_data_object["days"] = checked_days;
 
     let report_epoch_timestamp = $('#datetime_input').val();//Number(moment($('#datetime_input').val()[-3]).utc().valueOf());

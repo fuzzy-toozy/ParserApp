@@ -5,23 +5,13 @@
         {% if not view_data %}
             NO ENTITIES CREATED
         {% else %}
-            <table id="report_data" class="table table-bordered table-striped text-center">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>Product</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for product_name, seller_product_data in view_data.items() %}
-            <tr>
-                <td></td>
-                <td>{{ product_name }}</td>
-            </tr>
-            {% endfor %}
-            </tbody>
+        <div style="overflow-x: auto;">
+            <table id="report_data" class="table table-bordered text-center" width="100%">
+                <tbody id="report_view_tbody">
+                </tbody>
             </table>
-            {% endif %}
+        </div>
+        {% endif %}
             </div>
         </div>
     </div>

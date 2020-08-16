@@ -10,3 +10,28 @@ tr.shown td.details-control {
     width: 30px;
     height: 30px;
 }
+
+.icon-container {
+    right: 0;
+    top: 0;
+    display: flex;
+}
+
+.icon-alert {
+    display: inline-block;
+    color: white;
+    width: 20px;
+    height: 20px;
+    position: relative;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+.icon-href {
+    display: inline-block;
+    color: white;
+    width: 20px;
+    height: 20px;
+    position: relative;
+    cursor: pointer;
+}
