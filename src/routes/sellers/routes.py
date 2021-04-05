@@ -22,7 +22,7 @@ def edit_seller(project_id, entity_id):
             bc_op = ENTS.CREATE_SELLER
             current_seller = None
         else:
-            with session_scope(current_user.username, True) as session:
+            with session_scope(True) as session:
                 current_seller = session.query(Seller).filter(and_(Seller.id == int(entity_id),
                                                                    Seller.project_id == int(project_id))).first()
             bc_op = ENTS.EDIT_SELLER
@@ -40,7 +40,7 @@ def edit_seller(project_id, entity_id):
                                      save_entity_url=flask.url_for('sellers.edit_seller', project_id=project_id,
                                                                    entity_id=entity_id))
     else:
-        with session_scope(current_user.username) as session:
+        with session_scope() as session:
             if entity_id == 'new_entity':
                 session.add(Seller(name=flask.request.form.get('seller_name'), project_id=int(project_id)))
             else:
@@ -55,7 +55,7 @@ def edit_seller(project_id, entity_id):
 @login_required
 def sellers_view(project_id):
     bc_data = bc_generator.get_breadcrumbs_data(current_user.username, project_id, ENTS.SELLERS)
-    with session_scope(current_user.username, True) as session:
+    with session_scope(True) as session:
         current_sellers = session.query(Seller).filter(Seller.project_id == int(project_id)).all()
 
     new_entity_url = flask.url_for('sellers.edit_seller', project_id=project_id, entity_id='new_entity')
@@ -83,7 +83,7 @@ def delete_seller():
     print(request_js)
     seller_id = request_js['id']
     project_id = request_js['project_id']
-    with session_scope(current_user.username) as session:
+    with session_scope() as session:
         session.query(Seller).filter(Seller.id == seller_id).delete()
 
     return flask.redirect(flask.url_for("sellers.sellers_view", project_id=project_id))

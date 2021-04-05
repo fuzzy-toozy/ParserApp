@@ -3,9 +3,9 @@ from datetime import datetime as dt
 
 from .database import flask_db, DB_ROOT
 from .models import User, Base
+
 from werkzeug.security import generate_password_hash
 from contextlib import contextmanager
-
 
 def create_admin():
     exists = flask_db.session.query(flask_db.exists().where(User.username == "Admin")).scalar()
@@ -29,15 +29,12 @@ class UserDbManager:
         self.db_engine = None
         self.session_maker = None
 
-    def create_user_db(self, username):
-        self.db_engine = sqlalchemy.create_engine("sqlite:///%s/%s.db" % (self.db_root, username))
+    def create_user_db(self):
+        self.db_engine = sqlalchemy.create_engine("sqlite:///%s/user_data.db" % self.db_root)
         Base.metadata.create_all(self.db_engine)
+        self.session_maker = sqlalchemy.orm.sessionmaker(bind=self.db_engine)
 
-    def get_user_db_session(self, username):
-        if self.db_engine is None:
-            self.db_engine = sqlalchemy.create_engine("sqlite:///%s/%s.db" % (self.db_root, username))
-        if self.session_maker is None:
-            self.session_maker = sqlalchemy.orm.sessionmaker(bind=self.db_engine)
+    def get_user_db_session(self):
         return self.session_maker()
 
 
@@ -45,8 +42,8 @@ user_db_mgr = UserDbManager(DB_ROOT)
 
 
 @contextmanager
-def session_scope(username, expunge=False):
-    session = user_db_mgr.get_user_db_session(username)
+def session_scope(expunge=False):
+    session = user_db_mgr.get_user_db_session()
     try:
         yield session
         if expunge:

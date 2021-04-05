@@ -1,5 +1,6 @@
 import lxml.etree as etree
-import requests
+import cloudscraper
+import ssl
 import os
 import py_compile
 import uuid
@@ -8,6 +9,10 @@ import json
 import sys
 
 from common.settings import PARSERS_DIR
+
+ssl_context = ssl.create_default_context()
+ssl_context.check_hostname = False
+ssl_context.verify_mode = ssl.CERT_NONE
 
 
 def compile_parser_code(parser_module_path, parser_filename):
@@ -38,7 +43,7 @@ def import_parser_module(parser_name, parser_abspath):
 
 def get_page_dom(url):
     try:
-        page = requests.get(url, verify=False)
+        page = cloudscraper.CloudScraper(ssl_context=ssl_context).get(url, verify=False)
         dom = etree.HTML(page.text)
     except Exception as ex:
         err_msg = "Couldn't make dom for page url '%s': %s" % (url, str(ex))
@@ -75,7 +80,7 @@ def make_parser_module(parser_code, parser_name, parsers_dir):
     error_message = None
 
     try:
-        with open(parser_abspath, 'w') as parser_file:
+        with open(parser_abspath, mode="w", encoding="utf8") as parser_file:
             parser_file.write(parser_code)
     except Exception as ex:
         error_message = "Couldn't create parser file: %s" % str(ex)

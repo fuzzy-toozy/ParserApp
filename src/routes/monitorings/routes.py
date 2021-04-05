@@ -62,7 +62,7 @@ class REQUEST_INTERVALS:
 @login_required
 def edit_monitoring(project_id, entity_id):
     bc_data = bc_generator.get_breadcrumbs_data(current_user.username, project_id, ENTS.EDIT_MONITORING, [ENTS.MONITORINGS])
-    with session_scope(current_user.username, True) as session:
+    with session_scope(True) as session:
         current_products = session.query(Product).filter(Product.project_id == int(project_id)).all()
         current_sellers = session.query(Seller).filter(Seller.project_id == int(project_id)).all()
         monitoring_enabled = False
@@ -117,7 +117,7 @@ def edit_monitoring(project_id, entity_id):
 @login_required
 def monitorings_view(project_id):
     bc_data = bc_generator.get_breadcrumbs_data(current_user.username, project_id, ENTS.MONITORINGS)
-    with session_scope(current_user.username, True) as session:
+    with session_scope(True) as session:
         current_monitorings = session.query(Monitoring).filter(Monitoring.project_id == int(project_id)).all()
 
     new_entity_url = flask.url_for('monitorings.edit_monitoring', project_id=project_id, entity_id='new_entity')
@@ -158,13 +158,18 @@ def save_monitoring():
     request_interval = request_interval if request_interval in REQUEST_INTERVALS.INTERVALS_DICT else REQUEST_INTERVALS.DEFAULT
 
     seller_self = request_json['seller_self']
-    seller_self = int(seller_self) if seller_self != "NONE" else None
+    new_monitoring = True
+    if seller_self:
+        seller_self = int(seller_self)
+    else:
+        seller_self = None
 
-    with session_scope(current_user.username) as session:
+    with session_scope() as session:
 
         seller_self_obj = session.query(Seller).filter(Seller.id == seller_self).first()
 
         if monitoring_id != 'new_entity':
+            new_monitoring = False
             current_monitoring = session.query(Monitoring).filter(Monitoring.id == monitoring_id).first()
             current_monitoring.name = monitoring_name
             current_monitoring.enabled = monitoring_enabled
@@ -225,6 +230,7 @@ def save_monitoring():
 
             for sid in sel_id_to_insert:
                 sellers.append(seller_idmap[sid])
+
         else:
             current_monitoring = Monitoring(name=monitoring_name,
                                             project_id=project_id,
@@ -244,11 +250,22 @@ def save_monitoring():
                 product_id=int(product['id']))
             )
 
+        added_seller_self = False
         for seller in sellers:
+            seller_id = int(seller['id'])
+            if seller_id == seller_self:
+                added_seller_self = True
             session.add(MonitoringSeller(
                 project_id=project_id,
                 monitoring_id=monitoring_id,
                 seller_id=int(seller['id']))
+            )
+
+        if not added_seller_self and seller_self is not None and new_monitoring:
+            session.add(MonitoringSeller(
+                project_id=project_id,
+                monitoring_id=monitoring_id,
+                seller_id=seller_self)
             )
 
     return "OK"
@@ -260,7 +277,7 @@ def delete_monitoring():
     request_js = flask.request.get_json()
     monitoring_id = request_js['id']
     project_id = request_js['project_id']
-    with session_scope(current_user.username) as session:
+    with session_scope() as session:
         session.query(Monitoring).filter(Monitoring.id == monitoring_id).delete()
     return flask.redirect(flask.url_for("monitorings.monitorings_view", project_id=project_id))
 
@@ -268,7 +285,7 @@ def delete_monitoring():
 @monitorings.route("/monitoring_view/<project_id>/<monitoring_id>", methods=['GET'])
 @login_required
 def monitoring_view(project_id, monitoring_id):
-    with session_scope(current_user.username, True) as session:
+    with session_scope(True) as session:
         monitored_products = session.query(MonitoredProduct).filter(and_(MonitoredProduct.monitoring_id == monitoring_id,
                                                                          MonitoredProduct.project_id == project_id)).all()
 
@@ -294,7 +311,7 @@ def monitoring_view(project_id, monitoring_id):
 @monitorings.route("/edit_monitoring_object/<project_id>/<monitoring_id>/<product_id>/<seller_id>", methods=['GET'])
 @login_required
 def edit_monitoring_object(project_id, monitoring_id, product_id, seller_id):
-    with session_scope(current_user.username, True) as session:
+    with session_scope(True) as session:
         product = session.query(Product).filter(Product.id == product_id).first()
         product_options = session.query(ProductOption).filter(ProductOption.product_id == product_id).all()
         seller = session.query(Seller).filter(Seller.id == seller_id).first()
@@ -343,7 +360,7 @@ def delete_monitoring_object():
     project_id = request_js['project_id']
     product_id = request_js['product_id']
     seller_id = request_js['seller_id']
-    with session_scope(current_user.username) as session:
+    with session_scope() as session:
         session.query(MonitoredProduct).filter(and_(MonitoredProduct.monitoring_id == monitoring_id,
                                                     MonitoredProduct.product_id == product_id,
                                                     MonitoredProduct.project_id == project_id,
@@ -358,7 +375,10 @@ def format_parser_parameter(param_string):
 def get_option_data(option):
     option_id = int(option['option_id'])
     option_parser_id = option['parser_id']
-    option_parser_id = int(option_parser_id) if option_parser_id != 'NONE' else None
+    if len(option_parser_id) == 0:
+        option_parser_id = None
+    else:
+        option_parser_id = int(option_parser_id) if option_parser_id != 'NONE' else None
     option_parser_param = option['params']
     option_parser_param = format_parser_parameter(option_parser_param) if option_parser_param else None
 
@@ -375,14 +395,18 @@ def save_monitoring_object():
     project_id = int(request_js['project_id'])
     basic_parser = request_js['basic_parser']
 
-    with session_scope(current_user.username) as session:
+    with session_scope() as session:
         monitored_product = session.query(MonitoredProduct).filter(and_(MonitoredProduct.monitoring_id == monitoring_id,
                                                                         MonitoredProduct.product_id == product_id,
                                                                         MonitoredProduct.project_id == project_id,
-                                                                        MonitoredProduct.seller_id == seller_id)).first()
+                                                                        MonitoredProduct.seller_id == seller_id,
+                                                                        MonitoredProduct.project_id == project_id)).first()
 
         basic_parser_id = basic_parser['id']
-        basic_parser_id = int(basic_parser_id) if basic_parser_id != 'NONE' else None
+        if len(basic_parser_id) == 0:
+            basic_parser_id = None
+        else:
+            basic_parser_id = int(basic_parser_id) if basic_parser_id != 'NONE' else None
         parser_parameter = basic_parser['params']
         parser_parameter = format_parser_parameter(parser_parameter) if parser_parameter else None
         monitor_url = request_js['monitor_url']
@@ -391,7 +415,11 @@ def save_monitoring_object():
 
         if not monitored_product:
             monitoring_entities = session.query(MonitoringProduct, MonitoringSeller).filter(and_(MonitoringProduct.product_id == product_id,
-                                                                                                 MonitoringSeller.seller_id == seller_id)).first()
+                                                                                                 MonitoringSeller.seller_id == seller_id,
+                                                                                                 MonitoringSeller.monitoring_id == monitoring_id,
+                                                                                                 MonitoringProduct.monitoring_id == monitoring_id,
+                                                                                                 MonitoringProduct.project_id == project_id,
+                                                                                                 MonitoringSeller.project_id == project_id)).first()
 
             monitored_product = MonitoredProduct(project_id=project_id,
                                                  monitoring_id=monitoring_id,
@@ -423,7 +451,8 @@ def save_monitoring_object():
             for option in monitored_options:
                 id, parser, param = get_option_data(option)
                 db_option = session.query(MonitoredOption).filter(and_(MonitoredOption.option_id == id,
-                                                                       MonitoredOption.monitored_product_id == monitored_product.id)).first()
+                                                                       MonitoredOption.monitored_product_id == monitored_product.id,
+                                                                       MonitoredOption.project_id == project_id)).first()
                 db_option.parser_id = parser
                 db_option.parser_parameter = param
 
@@ -435,7 +464,7 @@ def save_monitoring_object():
 def monitoring_view_flat(project_id, monitoring_id):
     bc_data = bc_generator.get_breadcrumbs_data(current_user.username, project_id, None, [ENTS.MONITORINGS],
                                                 Monitoring, monitoring_id, ENTS.MONITORING)
-    with session_scope(current_user.username, True) as session:
+    with session_scope(True) as session:
         monitoring = session.query(Monitoring).filter(Monitoring.id == monitoring_id).first()
         monitored_products = session.query(MonitoredProduct).filter(and_(MonitoredProduct.monitoring_id == monitoring_id,
                                                                          MonitoredProduct.project_id == project_id)).all()

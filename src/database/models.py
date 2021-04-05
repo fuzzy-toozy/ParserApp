@@ -41,13 +41,15 @@ class User(UserMixin, flask_db.Model):
 
     id = flask_db.Column(flask_db.Integer, primary_key=True)
 
-    username = flask_db.Column(flask_db.String(64), index=False, unique=True, nullable=False)
+    username = flask_db.Column(flask_db.String(64), index=True, unique=True, nullable=False)
 
     password = flask_db.Column(flask_db.String(200), primary_key=False, unique=False, nullable=False)
 
     created = flask_db.Column(flask_db.DateTime, index=False, unique=False, nullable=False)
 
     admin = flask_db.Column(flask_db.Boolean, index=False, unique=False, nullable=False)
+
+    avatar = flask_db.Column(flask_db.BLOB, nullable=True)
 
     def set_password(self, password):
         self.password = generate_password_hash(password, method='sha256')
@@ -57,6 +59,25 @@ class User(UserMixin, flask_db.Model):
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
+
+
+class UserEmail(Base):
+    __tablename__ = 'users_email'
+
+    id = flask_db.Column(flask_db.Integer, primary_key=True)
+    user_id = flask_db.Column(flask_db.Integer, primary_key=False, unique=False, index=True)
+    email = flask_db.Column(flask_db.String(), index=True, nullable=False, unique=True)
+
+
+class SmtpSettings(Base):
+    __tablename__ = 'Smtp_settings'
+
+    id = flask_db.Column(flask_db.Integer, primary_key=True)
+    user_id = flask_db.Column(flask_db.Integer, primary_key=False, unique=False, index=True)
+    port = flask_db.Column(flask_db.Integer, primary_key=False, unique=False, nullable=True)
+    address = flask_db.Column(flask_db.String(), index=False, unique=False, nullable=True)
+    mailbox = flask_db.Column(flask_db.String(), index=False, unique=False, nullable=True)
+    password = flask_db.Column(flask_db.String(), index=False, unique=False, nullable=True)
 
 
 class Parser(Base):
@@ -222,12 +243,27 @@ class ScanReport(Base):
     __table_args__ = (UniqueConstraint("project_id", "name"),)
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(64), index=True, unique=False, nullable=False);
+    name = Column(String(), index=True, unique=False, nullable=False);
     project_id = Column(Integer, ForeignKey(Project.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
     monitoring_id = Column(Integer, ForeignKey(Monitoring.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
     notifications_enabled = Column(Boolean, unique=False, default=True)
-    report_time = Column(String(64), unique=False, nullable=True)
+    report_time = Column(String(), unique=False, nullable=True)
     days_of_week = Column(Text(), index=False, unique=False, nullable=True)
+
+
+class ReportStat(Base):
+    __tablename__ = "Report_stat"
+    __table_args__ = (UniqueConstraint("report_id", "email"),)
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, index=True, unique=False, primary_key=False, nullable=False)
+    project_id = Column(Integer, ForeignKey(Project.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
+    report_id = Column(Integer, ForeignKey(ScanReport.id, ondelete="CASCADE"), index=True, unique=False, primary_key=False, nullable=False)
+    email = Column(String(),  ForeignKey(UserEmail.email, ondelete="CASCADE"), unique=False, nullable=True)
+    report_time = Column(String(), unique=False, nullable=True)
+    report_time_unix = Column(Integer(), unique=False, nullable=True)
+    sent_ok = Column(Boolean, unique=False, default=False)
+    error = Column(Text(), index=False, unique=False, nullable=True)
 
 
 class ScanReportSeller(Base):

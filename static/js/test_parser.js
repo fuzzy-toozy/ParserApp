@@ -1,6 +1,6 @@
 function submit_form_check_js(form_to_submit) {
     var input_text = document.getElementById("parser_parameter").value;
-    if (input_text && check_js_error(input_text, "parser_parameter_error", document.getElementById("test_parser_data")) == -1) {
+    if (input_text && check_js_error(input_text, "parser_parameter_error", document.getElementById("text_container")) == -1) {
         return;
     }
     form_to_submit.submit();

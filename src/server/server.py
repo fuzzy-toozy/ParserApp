@@ -1,6 +1,9 @@
 import json
 import flask
+import logging
+#import uwsgi
 
+from functools import partial
 from flask import Flask
 from sqlalchemy import MetaData, and_
 import sqlalchemy
@@ -9,14 +12,14 @@ from flask_session import Session
 from flask_wtf.csrf import CSRFProtect, CSRFError
 
 from datetime import timedelta
-
 from common import parsing
 from database.users import create_admin, user_db_mgr, session_scope
 from database.models import *
 from common.forms import LoginForm
 from common.settings import SECRET_KEY
 
-from common.scanning import ScanningResult, ScanProcessor
+from common.scanning import ScanProcessor
+from common.reports import ReportSender
 
 from routes.sellers.routes import sellers
 from routes.projects.routes import projects
@@ -24,20 +27,34 @@ from routes.products.routes import products
 from routes.parsers.routes import parsers
 from routes.monitorings.routes import monitorings
 from routes.reports.routes import reports
+from routes.settings.routes import settings
 
 from common.scanning import ScanningResult
+from common.settings import get_config
 
 login_manager = LoginManager()
+log = logging.getLogger(__name__)
+
+
+#def uwsgi_at_exit(server_app, *args):
+#    server_app.finish()
 
 
 class ServerApp:
     def __init__(self, flask_login_mgr):
-        self.root_dir = "/home/fuzzy/shit/gledos/gachi_parser/"
+        #self.uwsgi_at_exit = partial(uwsgi_at_exit, self)
+        #uwsgi.atexit = self.uwsgi_at_exit
+        self.conf = get_config()
+        self.server = self.conf["ServerRemote"]
+        self.port = str(self.conf["Port"])
+        self.schema = self.conf["Schema"]
+        self.root_dir = self.conf["RootDir"]
         self.flask_app = Flask(__name__, root_path=self.root_dir)
         self.login_manager = flask_login_mgr
 
         self.session = Session()
         self.scan_processor = ScanProcessor()
+        self.report_sender = ReportSender(self.flask_app.jinja_env)
         self.csrf_protect = CSRFProtect()
 
         self.db = None
@@ -50,6 +67,7 @@ class ServerApp:
         self.flask_app.register_blueprint(parsers)
         self.flask_app.register_blueprint(monitorings)
         self.flask_app.register_blueprint(reports)
+        self.flask_app.register_blueprint(settings)
 
         self.flask_app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
         self.flask_app.config["SECRET_KEY"] = SECRET_KEY
@@ -61,27 +79,37 @@ class ServerApp:
         self.session.init_app(self.flask_app)
         self.login_manager.init_app(self.flask_app)
         self.init_db()
-        self.run_scan_workers()
+        self.run_workers()
+
+    def get_root_dir(self):
+        return self.root_dir
 
     def create_app(self):
         self.init()
         return self.flask_app
 
+    def get_server_addr(self):
+        return self.schema, self.server, self.port
+
     def run(self):
         self.flask_app.run()
 
     def finish(self):
+        log.info("Stopping workers")
+        self.report_sender.stop()
         self.scan_processor.stop_scan_workers()
 
-    def run_scan_workers(self):
+    def run_workers(self):
         if not self.scan_processor.is_initialised():
             with self.flask_app.app_context():
                 all_users = User.query.all()
                 users_set = set()
                 for user in all_users:
-                    users_set.add(user.username)
+                    users_set.add(user.id)
                 self.scan_processor.init_users(users_set)
             self.scan_processor.run_scan()
+
+        self.report_sender.start()
 
     def init_db(self):
         self.flask_app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///%s/db_data/%s.db" % (self.root_dir, "main_app.db")
@@ -91,9 +119,10 @@ class ServerApp:
         with self.flask_app.app_context():
             flask_db.create_all()
             create_admin()
+        user_db_mgr.create_user_db()
 
-    def add_scan_object(self, project_id, monitoring_id, user):
-        self.scan_processor.add_scan_object(project_id, monitoring_id, user)
+    def add_scan_object(self, project_id, monitoring_id, user_id):
+        self.scan_processor.add_scan_object(project_id, monitoring_id, user_id)
 
     def get_scan_stats(self, user):
         return self.scan_processor.get_stats(user)
@@ -113,7 +142,6 @@ class ServerApp:
 main_app = ServerApp(login_manager)
 app = main_app.create_app()
 
-
 @app.errorhandler(CSRFError)
 def handle_csrf_error(e):
     return e.description, 400
@@ -122,19 +150,12 @@ def handle_csrf_error(e):
 @app.before_request
 def set_session_timeout():
     flask.session.permanent = True
-    app.permanent_session_lifetime = timedelta(minutes=60)
-
-
-@app.route("/kek", methods=['GET'])
-@login_required
-def kekapp():
-    return flask.render_template("base_site.html", current_user=current_user)
+    app.permanent_session_lifetime = timedelta(days=1000)
 
 
 @app.route("/check_ajax", methods=['POST'])
 def check():
     request_json = flask.request.get_json()
-    print(request_json)
 
     main_app.create_db_tables("faggot")
 
@@ -165,7 +186,7 @@ def logout_page():
 @app.route("/scan_stats")
 @login_required
 def show_scan_stats():
-    view_data = main_app.get_scan_stats(current_user.username)
+    view_data = main_app.get_scan_stats(current_user.get_id())
     return flask.render_template("scan_stats.html", current_user=current_user,
                                  view_data=view_data,
                                  scan_state=view_data["state"])
@@ -174,7 +195,7 @@ def show_scan_stats():
 @app.route("/show_scan_res/<project_id>/<entity_id>", methods=['GET'])
 @login_required
 def scan_res(project_id, entity_id):
-    with session_scope(current_user.username) as session:
+    with session_scope() as session:
         scan_results = session.query(BaseScanResult, MonitoredProduct, Product, Seller).filter(and_(BaseScanResult.project_id == project_id,
                                                                                                     BaseScanResult.monitoring_id == entity_id,
                                                                                                     MonitoredProduct.id == BaseScanResult.monitored_product_id,
@@ -223,7 +244,7 @@ def scan_res(project_id, entity_id):
 @app.route("/force_scan/<project_id>/<entity_id>", methods=['GET'])
 @login_required
 def force_scan(project_id, entity_id):
-    with session_scope(current_user.username) as session:
+    with session_scope() as session:
         monitoring_products_and_parsers = session.query(MonitoredProduct,
                                                         Parser,
                                                         Product,
@@ -284,13 +305,14 @@ def do_gay_stuff(pqueue):
 @app.route("/force_scan_test/<project_id>/<entity_id>", methods=['POST'])
 @login_required
 def force_scan_test(project_id, entity_id):
-    main_app.add_scan_object(project_id, entity_id, current_user.username)
-    return flask.jsonify(main_app.get_scan_stats(current_user.username))
+    user_id = int(current_user.get_id())
+    main_app.add_scan_object(project_id, entity_id, user_id)
+    return flask.jsonify(main_app.get_scan_stats(user_id))
 
 @app.route("/scan_statss", methods=['GET'])
 @login_required
 def scan_statss():
-    return flask.jsonify(main_app.get_scan_stats(current_user.username))
+    return flask.jsonify(main_app.get_scan_stats(current_user.get_id()))
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -306,9 +328,10 @@ def login_page():
         password = flask.request.form.get('password')
 
         user = User.query.filter_by(username=username).first()
+        usrs = User.query.all()
+        print(usrs)
         if user:
             if user.check_password(password=password):
-                user_db_mgr.create_user_db(username)
                 login_user(user)
                 return flask.redirect(flask.url_for("projects.main_form"))
 

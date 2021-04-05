@@ -10,20 +10,32 @@ function edit_row(no)
  var name_data = name.getAttribute("value");
  var edit_node = document.createElement("input");
 
- edit_node.type = "text";
+ edit_node.type = "email";
  edit_node.id = "option_name_text" + no;
  edit_node.classList.add("form-control", "align-middle");
  edit_node.setAttribute("value", name_data);
+ edit_node.setAttribute("spellcheck", "false");
  name.innerHTML = "";
- name.appendChild(edit_node);
+
+ let form_element = document.createElement("form");
+ let form_div = document.createElement("div");
+ form_div.classList.add("form-group");
+ form_element.id = "option_name_form" + no;
+
+ form_div.appendChild(edit_node);
+ form_element.appendChild(form_div);
+ name.appendChild(form_element);
+
+ return form_element;
 }
 
 function save_row(no)
 {
- var option_name=document.getElementById("option_name_text"+no);
+ let option_name = document.getElementById("option_name_text"+no);
+ let option_form = document.getElementById("option_name_form"+no);
 
- var name_col_node = document.getElementById("option_name_row"+no);
- name_col_node.removeChild(option_name);
+ let name_col_node = document.getElementById("option_name_row"+no);
+ name_col_node.removeChild(option_form);
  name_col_node.innerHTML = option_name.value;
  name_col_node.setAttribute("value", option_name.value);
 
@@ -54,7 +66,7 @@ function create_button(b_id, b_class, b_text, b_click, b_icon, t_len) {
     return btn;
 }
 
-function add_row()
+function add_row(edit_func, save_func)
 {
  var option_new_name_node = document.getElementById("option_new_name")
  var new_option_name = option_new_name_node.value;
@@ -65,8 +77,8 @@ function add_row()
  var table_option_name_col = document.createElement("td");
  var table_buttons_col = document.createElement("td");
 
- var edit_button = create_button("option_edit_button" + table_len, "edit", "Edit", edit_row, "fa-cogs", table_len);
- var save_button = create_button("option_save_button" + table_len, "save", "Save", save_row, "fa-cogs", table_len);
+ var edit_button = create_button("option_edit_button" + table_len, "edit", "Edit", edit_func, "fa-cogs", table_len);
+ var save_button = create_button("option_save_button" + table_len, "save", "Save", save_func, "fa-cogs", table_len);
  var delete_button = create_button("option_delete_button" + table_len, "delete", "Delete", delete_row, "fa-cogs", table_len);
 
  save_button.classList.add("hidden");
@@ -146,7 +158,7 @@ function remove_product(project_id, product_id, product_name) {
             data: JSON.stringify({ "project_id": project_id, "product_id": product_id}),
             contentType: "application/json",
             success: function (data) {
-                window.location.href = '/products_view/'+project_id
+                window.location.href = '/products_view/' + project_id
             },
             // Ошибка http
             error: function (error_message) {

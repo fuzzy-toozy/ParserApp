@@ -1,0 +1,38 @@
+<div style="overflow-x: auto;">
+    <table id="report_data" class="table table-bordered text-center table_report_data" width="100%">
+        <tbody id="report_view_tbody">
+        {% for product_name, product_data in view_data.products.items() %}
+            <tr>
+                <th colspan="1000" class="bg-gray">{{ product_name }}</th>
+            </tr>
+            <tr>
+                <th>#</th>
+                    {% for seller_name in view_data.all_sellers %}
+                    <th>{{ seller_name }}</th>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <td><b>Basic Price</b></td>
+                    {% for seller_name in view_data.all_sellers %}
+                        {% if product_data[seller_name]["result"] %}
+                        <td><span>{{ product_data[seller_name]["result"] }}</span></td>
+                        {% else %}
+                        <td><span>--</span></td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+                    {% for option_name in product_data["all_opts"] %}
+                    <tr>
+                        <td><b>{{ option_name }}</b></td>
+                        {% for seller_name in view_data.all_sellers %}
+                            {% if product_data[seller_name]["options"].get(option_name) %}
+                            <td><span>{{ product_data[seller_name]["options"]["option_name"] }}</span></td>
+                            {% else %}
+                            <td><span>--</span></td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+        {% endfor %}
+        </tbody>
+    </table>
+</div>

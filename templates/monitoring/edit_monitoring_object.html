@@ -3,8 +3,10 @@
 Edit Monitoring
 {% endblock title%}
 {% block stylesheets %}
-<link rel="stylesheet" href="/static/styles/monitoring_mgmt.css">
 <link rel="stylesheet" href="/static/styles/edit_monitoring.css">
+<link rel="stylesheet" href="/static/styles/select2.min.css">
+<link rel="stylesheet" href="/static/styles/monitoring_mgmt.css">
+<link rel="stylesheet" href="/static/styles/select2_fix.css">
 {% endblock stylesheets %}
 {% block navigation_bar %}
     <li>
@@ -51,62 +53,78 @@ Edit Monitoring
                 <h3 class="box-title"><b>Parser Configuration</b></h3>
             </div>
             <div class="box-body">
-                <div class="form-group">
-                    <form id="parser_url_form" method="post" action="{{ submit_url }}">
-                        <label id="url-monitor_url" for="monitor_url"><b>URL:</b></label>
-                        <input class="form-control" id="monitor_url" name="parser_url" type="text"
+
+                <div class="row">
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                        <div class="form-group">
+                            <form id="parser_url_form" method="post" action="{{ submit_url }}">
+                                <label id="url-monitor_url" for="monitor_url"><b>URL:</b></label>
+                                <input class="form-control" id="monitor_url" name="parser_url" type="text"
                         {% if monitored_product and monitored_product.url %}
                             value="{{monitored_product.url}}"
                         {% else %}
                             value=""
                         {% endif %}
-                        >
-                    </form>
+                            >
+                            </form>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="col-md-2">
-                    <label for="select_base_parser"><b>Basic price parser:</b></label>
-                    <select class="dropbtn" id="select_base_parser" style="width: 100%">
-                    <option value="NONE" disabled selected>Select parser</option>
-                    <option value="NONE">None</option>
-                    {% for parser in project_parsers %}
-                        <option {% if monitored_product and parser.id == monitored_product.parser_id %}
+                <div class="row">
+                    <div class="col-xs-12 col-sm-4 col-md-4 col-lg-2">
+                        <div class="form-group">
+                            <label for="select_base_parser"><b>Basic price parser:</b></label>
+                            <select class="form-control searchable_dropdown dropbtn" id="select_base_parser" style="width: 100%">
+                                <option></option>
+                            {% for parser in project_parsers %}
+                                <option {% if monitored_product and parser.id == monitored_product.parser_id %}
                                 selected="selected"
                                 {% endif %}
                                 value="{{parser.id}}">{{parser.name}}</option>
-                    {% endfor %}
-                    </select>
-                </div>
+                            {% endfor %}
+                            </select>
+                        </div>
+                    </div>
 
-                <div id="basic_params_cont" class="col-md-10">
-                    <label for="basic_parser_parameters"><b>Basic parser parameters:</b></label>
-                    <textarea class="form-control" id="basic_parser_parameters">
+                    <div id="basic_params_cont" class="col-xs-12 col-sm-12 col-md-12 col-lg-10">
+                        <div class="form-group">
+                            <label for="basic_parser_parameters"><b>Basic parser parameters:</b></label>
+                            <textarea class="form-control" id="basic_parser_parameters">
                     {% if monitored_product and monitored_product.parser_parameter %}
                         {{monitored_product.parser_parameter}}
                     {% endif %}
-                    </textarea>
+                            </textarea>
+                        </div>
+                    </div>
                 </div>
 
+
                 {% for option in product_options %}
-                <div class="col-md-2">
-                    <label for="select_option{{option.id}}"><b>Option '{{option.name}}' parser:</b></label>
-                    <select class="dropbtn" id="select_option{{option.id}}" value="{{option.id}}" style="width: 100%">
-                    <option value="NONE" disabled selected>Select parser</option>
-                    <option value="NONE">None</option>
+                <div class="row">
+                    <div class="col-xs-12 col-sm-4 col-md-4 col-lg-2">
+                        <div class="form-group">
+                            <label for="select_option{{option.id}}"><b>Option '{{option.name}}' parser:</b></label>
+                            <select class="form-control searchable_dropdown dropbtn" id="select_option{{option.id}}" value="{{option.id}}" style="width: 100%">
+                                <option></option>
                     {% for parser in project_parsers %}
-                        <option {% if option.id in options_id_to_data and options_id_to_data[option.id].parser_id == parser.id%}
+                                <option {% if option.id in options_id_to_data and options_id_to_data[option.id].parser_id == parser.id%}
                                 selected="selected"
                                 {% endif %}
                                 value="{{parser.id}}">{{parser.name}}</option>
                     {% endfor %}
-                    </select>
-                </div>
-                <div id="option_params{{option.id}}" class="col-md-10">
-                    <label for="option_parser_parameters{{option.id}}"><b>Option '{{option.name}}' parser parameters:</b></label>
-                    <textarea class="form-control" id="option_parser_parameters{{option.id}}">
+                            </select>
+                        </div>
+                    </div>
+                    <div id="option_params{{option.id}}" class="col-xs-12 col-sm-12 col-md-12 col-lg-10">
+                        <div class="form-group">
+                            <label for="option_parser_parameters{{option.id}}"><b>Option '{{option.name}}' parser parameters:</b></label>
+                            <textarea class="form-control" id="option_parser_parameters{{option.id}}">
                     {% if option.id in options_id_to_data and options_id_to_data[option.id].parser_parameter %}
                     {{ options_id_to_data[option.id].parser_parameter }}
                     {% endif %}</textarea>
+                        </div>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
@@ -115,7 +133,9 @@ Edit Monitoring
 </div>
 {% endblock %}
 {% block javascripts %}
+<script src="/static/libs/select2.full.min.js"></script>
 <script src="/static/js/edit_monitoring_object_callbacks.js"></script>
+<script src="/static/js/fix_select2.js"></script>
 {% endblock %}
 
 

@@ -26,7 +26,7 @@ function remove_entity(project_id, common_name, entity_id, entity_name, post_url
         data: project_data,
         contentType: "application/json",
         success: function (data) {
-            window.location.href = redirect_url
+            window.location.href = redirect_url;
         },
         error: function (error_message) {
         }
@@ -54,3 +54,25 @@ $('#' + node_id).text(function(i, text) {
     return shorten_text(text);
 });
 }
+
+function add_header_margin() {
+    let main_header = document.querySelector("header.main-header");
+    if (! main_header) {
+        return;
+    }
+    if ($(window).width() < 755) {
+         main_header.style.marginBottom = "15px";
+    } else {
+         main_header.style.marginBottom = "";
+    }
+}
+
+$(document).ready(function() {
+    add_header_margin();
+});
+
+window.addEventListener('resize', function(event){
+    add_header_margin();
+});
+
+

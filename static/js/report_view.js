@@ -1,8 +1,63 @@
 $(document).ready(
     function() {
-fill_table_body();
+        fill_table_body();
+    }
+);
 
+function force_send_report(trigger_url, data_url)
+{
+    let loading_div = document.getElementById("loading_view");
+    loading_div.style.display = "";
+    $.ajax({
+        type: 'POST',
+        url: trigger_url,
+        cache: false,
+        processData: false,
+        dataType: "json",
+        success: function (parsed_data) {
+            if (parsed_data["state"]) {
+                alert(parsed_data["message"]);
+            }
+                $.ajax({
+                        type: 'POST',
+                        url: data_url,
+                        cache: false,
+                        processData: false,
+                        dataType: "html",
+                        success: function (data) {
+                            let reports_row = document.getElementById("reports_row");
+                            $(reports_row).html(data);
+                        },
+                        error: function (xhr, status, error) {
+                            alert(xhr.responseText);
+                        }
+                    });
+        },
+        error: function (xhr, status, error) {
+            alert(xhr.responseText);
+            console.log(status);
+            console.log(error);
+            loading_div.style.display = "none";
+        }
+    })
+}
+
+function post_force_scan(post_url) {
+        $.ajax({
+        type: 'POST',
+        url: post_url,
+        cache: false,
+        processData: false,
+        data: "",
+        contentType: "application/json",
+        success: function (data) {
+            alert("Scan started successfully");
+        },
+        error: function (error_message) {
+            alert(error_message);
+        }
     });
+}
 
 function escapeHtml(unsafe) {
     return unsafe
@@ -26,6 +81,7 @@ function prepare_report_column(column_server_data, add_icons) {
     }
 
     if (column_server_data) {
+	console.log(column_server_data);
         let scan_result = escapeHtml(column_server_data["result"]);
         let scan_time = column_server_data["time"];
         popover_msg += scan_time;
@@ -70,6 +126,7 @@ function prepare_report_column(column_server_data, add_icons) {
     $(col_div_child).hover(function() {
         $(this).popover({
             content: popover_msg,
+            placement: "auto",
             html: true,
             container: "body"
         }).popover('show');
@@ -82,6 +139,9 @@ function prepare_report_column(column_server_data, add_icons) {
 }
 
 function addUrl(element, url) {
+    if (! url) {
+        return;
+    }
     let div_child = document.createElement("div");
     div_child.className = "icon-href bg-blue";
     let icon_node = document.createElement("i");
@@ -96,6 +156,7 @@ function addUrl(element, url) {
     $(div_child).hover(function() {
         $(this).popover({
             content: url,
+            placement: "auto",
             html: true,
             container: "body"
         }).popover('show');
@@ -108,7 +169,8 @@ function addUrl(element, url) {
 
 function fill_table_body() {
     let view_table_body = document.getElementById("report_view_tbody");
-    for (product_name in view_data) {
+    let view_products = view_data["products"];
+    for (product_name in view_products) {
         let product_name_row = document.createElement("tr");
         let product_name_col = document.createElement("th");
         product_name_col.innerHTML = product_name;
@@ -116,14 +178,14 @@ function fill_table_body() {
         product_name_col.className += "bg-gray";
         product_name_row.appendChild(product_name_col);
         view_table_body.appendChild(product_name_row);
-        ass(view_table_body, product_name);
-        console.log("Pizdec prosto");
+        ass(view_table_body, product_name, view_products);
     }
 }
 
 function ass(view_table_body, product_name) {
-    let base_data = view_data[product_name];
-    let product_data = base_data["sellers"];
+    let base_data = view_data["products"][product_name];
+    let sellers_list = view_data["all_sellers"];
+    let sellers_data = base_data["sellers"];
 
     let th1 = document.createElement("th")
     th1.innerHTML = "#"
@@ -152,9 +214,10 @@ function ass(view_table_body, product_name) {
         table_rows.push(option_row);
     }
 
-    for (seller_name in product_data) {
-        let seller_data = product_data[seller_name];
+    for (seller_name of sellers_list) {
+        let seller_data = sellers_data[seller_name];
         let add_icons = seller_data["rescode"] != -100;
+	console.log(seller_data);
         let base_data_col = prepare_report_column(seller_data, add_icons);
         base_data_col.style.cssText = "border-bottom-width: 2px;";
         base_row.appendChild(base_data_col);
@@ -167,10 +230,10 @@ function ass(view_table_body, product_name) {
         }
     }
 
-    for (seller_name in product_data) {
+    for (seller_name of sellers_list) {
         let new_th = document.createElement("th");
         new_th.innerHTML = seller_name;
-        addUrl(new_th, product_data[seller_name]["url"])
+        addUrl(new_th, sellers_data[seller_name]["url"])
         thead_row.appendChild(new_th);
     }
 
@@ -204,7 +267,6 @@ function format(row_data) {
     base_row.appendChild(base_col);
 
     table_header.appendChild(base_row);
-    //tbody.appendChild(base_row);
 
     let opt_names = base_data["all_opts"];
     for (let idx = 0; idx < opt_names.length; idx++) {
@@ -217,7 +279,6 @@ function format(row_data) {
 
     for (seller_name in product_data) {
         let seller_data = product_data[seller_name];
-        //table_rows[0].appendChild(prepare_report_column(seller_data));
         let add_icons = seller_data["rescode"] != -100;
         let base_data_col = prepare_report_column(seller_data, add_icons);
         base_data_col.style.cssText = "border-bottom-width: 2px;";
@@ -246,7 +307,6 @@ function format(row_data) {
         tbody.appendChild(table_rows[idx]);
     }
     new_table.appendChild(tbody);
-    new_table.className = "table table-bordered table-stripped table-sm nowrap";
     let report_table_id = "ReportData_" + product_name;
     new_table.setAttribute("id", report_table_id);
     new_table.setAttribute("width", "100%");

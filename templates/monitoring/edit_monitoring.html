@@ -3,12 +3,14 @@
 Edit Monitoring
 {% endblock title%}
 {% block stylesheets %}
+<link rel="stylesheet" href="/static/styles/select2.min.css">
 <link rel="stylesheet" href="/static/styles/monitoring_mgmt.css">
 <link rel="stylesheet" href="/static/styles/edit_monitoring.css">
+<link rel="stylesheet" href="/static/styles/select2_fix.css">
 {% endblock stylesheets %}
 {% block navigation_bar %}
     <li>
-        <a class="btn btn-app" onclick="post_force_scan('{{ scan_url }}')"><i class="fa fa-close"></i>Force Scan</a>
+        <a class="btn btn-app" onclick="post_force_scan('{{ scan_url }}')"><i class="fa fa-search"></i>Force Scan</a>
     </li>
     <li>
         <a class="btn btn-app" href="{{ redirect_url }}"><i class="fa fa-close"></i>Cancel</a>
@@ -39,7 +41,7 @@ Edit Monitoring
 </div>
 
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-6">
         <div class="box box-primary">
             <form id="monitoring_name" method="post" enctype="multipart/form-data" role="form">
                 <div class="box-body">
@@ -53,54 +55,62 @@ Edit Monitoring
     </div>
 
 
-    <div class="col-sm-4 col-md-2">
-        <div class="box box-primary">
-            <div class="box-body">
-                <label for="seller_self"><b>Seller Self:</b></label>
-                <select id="seller_self" class="dropbtn select_base">
-                    <option value="NONE" disabled selected>Seller Self:</option>
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-6">
+        <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4 monitoring_dropdown">
+            <div class="box box-primary">
+                <div class="box-body">
+                    <div class="form-group col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                        <label for="seller_self"><b>Seller Self:</b></label>
+                            <select style="width: 100%;" id="seller_self" class="form-control searchable_dropdown_seller">
+                                <option></option>
                     {% for seller in project_sellers %}
                         {% if seller.id == seller_self_id %}}
-                            <option selected value="{{seller.id}}">{{seller.name}}</option>
+                                <option selected value="{{seller.id}}">{{seller.name}}</option>
                         {% else %}
-                            <option value="{{seller.id}}">{{seller.name}}</option>
+                                <option value="{{seller.id}}">{{seller.name}}</option>
                         {% endif %}
                     {% endfor %}
-                </select>
+                            </select>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-sm-4 col-md-2">
-        <div class="box box-primary">
-            <div class="box-body">
-                <label for="update_interval"><b>Scan Interval:</b></label>
-                <select id="update_interval" class="dropbtn select_base">
+        <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4 monitoring_dropdown">
+            <div class="box box-primary">
+                <div class="box-body">
+                    <div class="form-group col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                        <label for="update_interval"><b>Scan Interval:</b></label>
+                        <select style="width: 100%;" id="update_interval" class="form-control common_dropdown_scan_interval">
                     {% for value, description in scan_intervals.items() %}
                         {% if value == enabled_scan_interval %}
-                        <option selected value="{{value}}">{{description}}</option>
+                            <option selected value="{{value}}">{{description}}</option>
                         {% else %}
-                        <option value="{{value}}">{{description}}</option>
+                            <option value="{{value}}">{{description}}</option>
                         {% endif %}
                     {% endfor %}
-                </select>
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-sm-4 col-md-2">
-        <div class="box box-primary">
-            <div class="box-body">
-                <label for="request_interval"><b>Request interval:</b></label>
-                <select id="request_interval" class="dropbtn select_base">
+        <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4 monitoring_dropdown">
+            <div class="box box-primary">
+                <div class="box-body">
+                    <div class="form-group col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                        <label for="request_interval"><b>Request interval:</b></label>
+                        <select style="width: 100%;" id="request_interval" class="form-control common_dropdown_request_interval">
                     {% for value, description in request_intervals.items() %}
                         {% if value == enabled_request_interval %}
-                        <option selected value="{{value}}">{{description}}</option>
+                            <option selected value="{{value}}">{{description}}</option>
                         {% else %}
-                        <option value="{{value}}">{{description}}</option>
+                            <option value="{{value}}">{{description}}</option>
                         {% endif %}
                     {% endfor %}
-                </select>
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -108,7 +118,7 @@ Edit Monitoring
 
 
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-6">
         <div class="box box-primary">
             <div class="box-body">
                 <table id="chosen_products_table" class="table table-bordered table-striped text-center">
@@ -127,20 +137,19 @@ Edit Monitoring
                     {% endfor %}
                     </tbody>
                 </table>
-                <div class="dropdown" style="text-align: left">
-                    <button id="product_list_chose" onclick="on_list_click('product_list_view')"
-                            class="dropbtn">Chose product to add</button>
-                    <div id="product_list_view" class="dropdown-content">
-                        {% for product in project_products %}
-                            <div id="product_{{product.id}}" name="product_{{loop.index}}"
-                                 onclick="on_list_element_click_dt('product', this, '{{product.id}}', '{{product.name}}')">{{product.name}}</div>
-                        {% endfor %}
-                    </div>
+
+                <div class="form-group col-xs-12 col-sm-12 col-md-4 col-lg-4">
+                        <select style="width: 100%;" id="monitoring_products_select" class="form-control">
+                                <option></option>
+                    {% for product in project_products %}
+                                <option onclick="on_list_element_click_dt('product', this, '{{product.id}}', '{{product.name}}')" value="{{product.id}}">{{product.name}}</option>
+                    {% endfor %}
+                        </select>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-6">
         <div class="box box-primary">
             <div class="box-body">
                 <table id="chosen_sellers_table" class="table table-bordered table-striped text-center">
@@ -160,15 +169,13 @@ Edit Monitoring
                         </tbody>
                 </table>
 
-                <div class="dropdown" style="text-align: left">
-                    <button id="seller_list_chose" onclick="on_list_click('seller_list_view')"
-                        class="dropbtn">Chose seller to add</button>
-                    <div id="seller_list_view" class="dropdown-content">
-                        {% for seller in project_sellers %}
-                            <div id="seller_{{seller.id}}" name="seller_{{loop.index}}"
-                                 onclick="on_list_element_click_dt('seller', this, '{{seller.id}}', '{{seller.name}}')">{{seller.name}}</div>
-                        {% endfor %}
-                    </div>
+                <div class="form-group col-xs-12 col-sm-12 col-md-4 col-lg-4">
+                        <select style="width: 100%;" id="monitoring_sellers_select" class="form-control">
+                                <option></option>
+                    {% for seller in project_sellers %}
+                                <option onclick="on_list_element_click_dt('seller', this, '{{seller.id}}', '{{seller.name}}')" value="{{seller.id}}">{{seller.name}}</option>
+                    {% endfor %}
+                        </select>
                 </div>
             </div>
         </div>
@@ -176,5 +183,20 @@ Edit Monitoring
 </div>
 {% endblock %}
 {% block javascripts %}
-    <script src="/static/js/edit_monitoring_callbacks.js"></script>
+<script>
+    let added_products = {
+        {% for product in monitoring_products %}
+            "{{product[1].id}}": "{{product[1].name}}",
+        {% endfor %}
+    };
+
+    let added_sellers = {
+        {% for seller in monitoring_sellers %}
+            "{{seller[1].id}}": "{{seller[1].name}}",
+        {% endfor %}
+    };
+</script>
+<script src="/static/libs/select2.full.min.js"></script>
+<script src="/static/js/edit_monitoring_callbacks.js"></script>
+<script src="/static/js/fix_select2.js"></script>
 {% endblock %}

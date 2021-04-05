@@ -1,5 +1,6 @@
 import flask
 import json
+import logging
 
 from flask_login import login_required, current_user
 from flask import Blueprint
@@ -11,6 +12,7 @@ from routes.shared import bc_generator, ENTS
 
 
 products = Blueprint("products", __name__)
+log = logging.getLogger(__name__)
 
 
 @products.route("/products_view/<project_id>", methods=['GET'])
@@ -18,7 +20,7 @@ products = Blueprint("products", __name__)
 def products_view(project_id):
     bc_data = bc_generator.get_breadcrumbs_data(current_user.username, project_id, ENTS.PRODUCTS)
     if flask.request.method == 'GET':
-        with session_scope(current_user.username) as session:
+        with session_scope() as session:
             current_products = session.query(Product).filter(Product.project_id == int(project_id)).all()
             return flask.render_template("product/products_view.html",
                                          current_user=current_user,
@@ -31,7 +33,7 @@ def products_view(project_id):
 @login_required
 def edit_product(project_id, product_id):
     if product_id != 'new_product':
-        with session_scope(current_user.username, True) as session:
+        with session_scope(True) as session:
             current_product = session.query(Product).filter(Product.id == int(product_id)).first()
             current_product_name = current_product.name
             current_product_opts = session.query(ProductOption).filter(ProductOption.product_id == int(product_id)).all()
@@ -61,7 +63,7 @@ def save_product():
     product_name = request_json['name']
     product_options = request_json['options']
 
-    with session_scope(current_user.username) as session:
+    with session_scope() as session:
 
         if product_id != 'new_product':
             current_product = session.query(Product).filter(Product.id == product_id).first()
@@ -107,7 +109,6 @@ def save_product():
                                                     monitoring_id=mon_product.monitoring_id,
                                                     monitored_product_id=mon_product.id))
 
-            current_product.options = json.dumps(product_options)
         else:
             new_product = Product(name=product_name, project_id=project_id)
             session.add(new_product)
@@ -126,7 +127,8 @@ def delete_product():
     product_id = int(request_json['product_id'])
     project_id = int(request_json['project_id'])
 
-    with session_scope(current_user.username) as session:
+    with session_scope() as session:
         session.query(Product).filter(Product.id == product_id).delete()
 
+    log.debug(flask.url_for("products.products_view", project_id=project_id))
     return flask.redirect(flask.url_for("products.products_view", project_id=project_id))

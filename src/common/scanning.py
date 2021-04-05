@@ -11,7 +11,7 @@ from database.models import *
 from sqlalchemy import and_
 from multiprocessing import Process, Queue, Event, Lock
 from queue import Empty
-from signal import signal, SIGUSR1
+from signal import signal, SIGUSR1, SIGINT, SIGTERM, SIG_IGN
 
 logging.basicConfig(filename="parser.log",
                             filemode='a',
@@ -50,10 +50,9 @@ class ScanningResult:
 
 class MonitoringScanner:
 
-    def __init__(self, project_id, monitoring_id, username):
+    def __init__(self, project_id, monitoring_id):
         self.monitoring_id = monitoring_id
         self.project_id = project_id
-        self.username = username
         self.scan_generator = None
         self.retries_count = 0
         self.max_retries = 5
@@ -62,7 +61,7 @@ class MonitoringScanner:
         self.project = None
         self.monitoring = None
 
-        with session_scope(username, True) as session:
+        with session_scope(True) as session:
             project_and_monitoring = session.query(Monitoring, Project).filter(and_(Monitoring.id == self.monitoring_id,
                                                                                Monitoring.project_id == self.project_id,
                                                                                Project.id == self.project_id)).first()
@@ -85,7 +84,7 @@ class MonitoringScanner:
         is_ok = False
         result = 0
         try:
-            with session_scope(self.username) as session:
+            with session_scope() as session:
                 result = session.query(ScanQueueObject).filter(and_(ScanQueueObject.project_id == self.project_id,
                                                                     ScanQueueObject.monitoring_id == self.monitoring_id)).count()
                 is_ok = True
@@ -97,7 +96,7 @@ class MonitoringScanner:
     def put_scan_object_back(self, product_id, scan_stats, retries):
         try:
             scan_stats.add_retries(product_id)
-            with session_scope(self.username) as session:
+            with session_scope() as session:
                 session.add(ScanQueueObject(project_id=self.project_id,
                                             monitoring_id=self.monitoring_id,
                                             monitored_product_id=product_id,
@@ -110,7 +109,7 @@ class MonitoringScanner:
 
     def init_scan_data(self, scan_stats):
         try:
-            with session_scope(self.username) as session:
+            with session_scope() as session:
                 monitoring_products_and_parsers = session.query(MonitoredProduct, Product, Seller).filter(and_(MonitoredProduct.monitoring_id == self.monitoring_id,
                                                                                                                     MonitoredProduct.project_id == self.project_id,
                                                                                                                     Product.id == MonitoredProduct.product_id,
@@ -118,6 +117,7 @@ class MonitoringScanner:
 
                 scan_stats.set_state(ScanStats.INIT)
                 scan_stats.init(self.project, self.monitoring)
+                print(monitoring_products_and_parsers)
                 for scan_data in monitoring_products_and_parsers:
                     scan_object_data = {}
                     scan_object_data["product"] = {"id": scan_data[1].id, "name": scan_data[1].name}
@@ -145,7 +145,7 @@ class MonitoringScanner:
     def get_next_scan_object(self):
         try:
             retries = 0
-            with session_scope(self.username) as session:
+            with session_scope() as session:
                 scan_object = session.query(ScanQueueObject).filter(and_(ScanQueueObject.project_id == self.project_id,
                                                                          ScanQueueObject.monitoring_id == self.monitoring_id)).first()
 
@@ -163,7 +163,7 @@ class MonitoringScanner:
     def scan_product(self, stop_event, prod_id, scan_stats):
         scan_stats.set_state(ScanStats.SCAN)
         try:
-            with session_scope(self.username) as session:
+            with session_scope() as session:
                 monitored_product, base_parser = session.query(MonitoredProduct, Parser).filter(
                     and_(MonitoredProduct.monitoring_id == self.monitoring_id,
                          MonitoredProduct.project_id == self.project_id,
@@ -238,6 +238,8 @@ class MonitoringScanner:
                                                                                        Parser.id == MonitoredOption.parser_id).all()
 
                     for monitored_option, option_parser, product_option in monitored_options_data:
+                        if stop_event.is_set():
+                            return ScanningResult.INTERRUPTED, "Scanning interrupted"
                         if page_dom:
                             option_parser_exec_status, option_parser_result, _, _ = parsing.do_parse(option_parser,
                                                                                                      monitored_option.parser_parameter,
@@ -327,7 +329,7 @@ class MonitoringScanner:
 
     def get_json_results(self):
         results = []
-        with session_scope(self.username) as session:
+        with session_scope() as session:
             scan_res = session.query(BaseScanResult).filter(and_(BaseScanResult.monitoring_id == self.monitoring_id,
                                                                  BaseScanResult.project_id == self.project_id)).all()
 
@@ -466,6 +468,8 @@ class ScanStats:
 def do_scan_worker(queue, stats_queue, exit_event, user, scan_processor):
     scan_stats = ScanStats(stats_queue)
     signal(SIGUSR1, scan_stats.worker_stats_sh)
+    signal(SIGINT, SIG_IGN)
+    signal(SIGTERM, SIG_IGN)
     while True:
         try:
             monitoring_scanner = queue.get(timeout=3)
@@ -475,9 +479,9 @@ def do_scan_worker(queue, stats_queue, exit_event, user, scan_processor):
             if init_res:
                 scan_res, _ = monitoring_scanner.run_scan(exit_event, scan_stats)
             else:
-                print("Failed to initialise scan data: %s" % err_msg)
-        except (KeyboardInterrupt, SystemExit):
-            print("Exiting user thread")
+                log.error("Failed to initialise scan data: %s" % err_msg)
+        except (SystemExit):
+            log.debug("Exiting user thread")
             break
         except Empty:
             if exit_event.is_set():
@@ -489,7 +493,7 @@ def do_scan_worker(queue, stats_queue, exit_event, user, scan_processor):
             scan_stats.reset()
 
         try:
-            with session_scope(user) as session:
+            with session_scope() as session:
                 all_monitorings = session.query(Monitoring).all()
                 for monitoring in all_monitorings:
                     if exit_event.is_set():
@@ -502,9 +506,10 @@ def do_scan_worker(queue, stats_queue, exit_event, user, scan_processor):
 
         except Exception as ex:
             print("Something went wrong while gay scan on time: %s" % str(ex))
+    log.info("Scan worker exited")
+
 
 class ScanProcessor:
-
     PROCESS = "process"
     STATS_QUEUE = "stats_queue"
     QUEUE = "queue"
@@ -512,7 +517,6 @@ class ScanProcessor:
     EXIT_EVENT = "exit_event"
 
     def __init__(self):
-        print("BLEAT")
         self.users_set = None
         self.users_data = {}
         self.initialised = False
@@ -538,9 +542,9 @@ class ScanProcessor:
     def is_initialised(self):
         return self.initialised
 
-    def get_stats(self, user):
+    def get_stats(self, user_id):
         with self.mp_lock:
-            user_data = self.users_data[user]
+            user_data = self.users_data[int(user_id)]
             ScanProcessor._send_signal(user_data[ScanProcessor.PROCESS].pid, SIGUSR1)
             user_queue = user_data[ScanProcessor.STATS_QUEUE]
             result = {}
@@ -565,10 +569,10 @@ class ScanProcessor:
             scan_process.daemon = True
             scan_process.start()
 
-    def add_scan_object(self, project_id, monitoring_id, user):
+    def add_scan_object(self, project_id, monitoring_id, user_id):
         with self.mp_lock:
-            user_queue = self.users_data[user][ScanProcessor.QUEUE]
-            user_queue.put(MonitoringScanner(project_id, monitoring_id, user))
+            user_queue = self.users_data[int(user_id)][ScanProcessor.QUEUE]
+            user_queue.put(MonitoringScanner(project_id, monitoring_id))
 
     def remove_user(self, user):
         with self.mp_lock:
@@ -581,12 +585,16 @@ class ScanProcessor:
             del self.users_data[user]
 
     def stop_scan_workers(self):
+        log.info("STOP SCAN WORKERS")
         with self.mp_lock:
+            log.info("USERS DATA %s" % self.users_data)
             if not self.users_data:
                 return
             for user, user_data in self.users_data.items():
                 stop_event = user_data.get(ScanProcessor.EXIT_EVENT)
                 user_process = user_data.get(ScanProcessor.PROCESS)
                 stop_event.set()
+                log.debug("Trying to join %d" % user_process.pid)
                 user_process.join()
+                log.debug("Scan worker with pid: %d stopped successfully" % user_process.pid)
             self.users_data = None

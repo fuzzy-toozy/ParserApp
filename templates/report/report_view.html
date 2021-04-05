@@ -5,6 +5,17 @@ Reports View
 {% block breadcrumbs %}
     {% include 'breadcrumb_list_new.html' %}
 {% endblock %}
+{% block navigation_bar %}
+    <li>
+        <a class="btn btn-app" onclick="force_send_report('{{ trigger_url }}', '{{ data_url }}')"><i class="fa fa-envelope-o"></i>Force Report</a>
+    </li>
+    <li>
+        <a class="btn btn-app" onclick="post_force_scan('{{ scan_url }}')"><i class="fa fa-search "></i>Force Scan</a>
+    </li>
+    <li>
+        <a class="btn btn-app" href="{{ cancel_url }}"><i class="fa fa-close"></i>Cancel</a>
+    </li>
+{% endblock %}
 {% block content %}
     {% include 'report/report_table_view.html' %}
 {% endblock %}

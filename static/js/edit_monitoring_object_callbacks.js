@@ -52,6 +52,10 @@ $(document).ready(function() {
 
     format_parser_parameters();
     format_url();
+
+    $(".searchable_dropdown").select2({
+        placeholder: "Select parser",
+    });
 });
 
 function check_error(input_text, option_id, parent_container) {

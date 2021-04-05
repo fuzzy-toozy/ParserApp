@@ -35,3 +35,8 @@ tr.shown td.details-control {
     position: relative;
     cursor: pointer;
 }
+
+#report_data td {
+    width: 1px;
+    white-space: nowrap;
+}

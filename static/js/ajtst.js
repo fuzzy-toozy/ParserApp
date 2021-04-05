@@ -61,6 +61,7 @@ $(document).ready(function() {
 
     // DataTable
     var table = $('#example').DataTable({
+      "scrollX": true,
       "columns": [
             null,
             { "searchable": false },

@@ -1,0 +1,213 @@
+<div style="overflow-x: auto;">
+<style>
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+	width: 100%;
+	border: 2px solid #ddd;
+	white-space: nowrap;
+}
+
+th, td {
+	text-align: center;
+	padding: 8px
+}
+
+tr.product-title {
+	background-color: #f2f2f2;
+	width: 100%
+}
+
+td.column-title, td.row-title {
+	font-weight: bold
+}
+
+td.row-title {}
+
+tr.row-data {
+	border-bottom: 1px solid #ddd
+}
+
+td {
+	border-right: 1px solid #ddd
+}
+
+td>.status-text {}
+
+.status-text p {
+	font-size: 10px;
+	font-weight: bold;
+	margin: 0;
+	text-transform: uppercase;
+}
+
+.status-text .success {
+	color: #00a65a!important
+}
+
+.status-text .error {
+	color: #ff0000!important
+}
+
+.status-text .warning {
+	color: #f39c12!important
+}
+
+td>.product-url {}
+
+.product-url a {
+	color: #0073b7!important;
+	font-size: 10px;
+	font-weight: bold;
+	margin: 0;
+	text-transform: uppercase;
+	text-decoration: none!important
+}
+</style>
+    <div><span>Report name: {{view_data["report_name"]}}</span></div>
+    <div><span>Scan date: {{view_data["scan_time"]}}</span></div>
+    <div><span>Summary:</span></div>
+    <div><span>{{view_data["total_success"]}} successful</span></div>
+    <div><span>{{view_data["total_warn"]}} warnings</span></div>
+    <div><span>{{view_data["total_error"]}} errors</span></div>
+    <table style="border-collapse: collapse;
+	border-spacing: 0;
+	width: 100%;
+	border: 2px solid #ddd;
+	white-space: nowrap;">
+        <tbody>
+        {% for product_name, product_data in view_data.products.items() %}
+            <tr style="	background-color: #f2f2f2; width: 100%" class="product-title">
+                <th style="	text-align: center; padding: 8px" colspan="1000">{{ product_name }}</th>
+            </tr>
+            <tr style="border-bottom: 1px solid #ddd" class="row-data">
+                <td style="border-right: 1px solid #ddd; text-align: center; padding: 8px; font-weight: bold" class="column-title">#</td>
+                    {% for seller_name in view_data.all_sellers %}
+                    {% set seller_data = product_data["sellers"][seller_name] %}
+                    <td style="border-right: 1px solid #ddd; text-align: center; padding: 8px; font-weight: bold" class="column-title" >{{ seller_name }}
+                        {% if seller_data.get("url") %}
+                        <div class="product-url">
+    			            <a style="color: #0073b7!important;
+                         	        font-size: 10px;
+	                                font-weight: bold;
+	                                margin: 0;
+	                                text-transform: uppercase;
+	                                text-decoration: none!important;" href="{{ seller_data.get('url') }}" target="_blank">URL</a>
+                        </div>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;" class="row-data">
+                    <td style="border-right: 1px solid #ddd; text-align: center;padding: 8px" class="row-title"><b>Basic Price</b></td>
+                    {% for seller_name in view_data.all_sellers %}
+                        {% set seller_data = product_data["sellers"][seller_name] %}
+                        {% if seller_data["result"] %}
+                        <td style="border-right: 1px solid #ddd; text-align: center;padding: 8px"><span>{{ seller_data["result"] }}</span>
+                            {% if seller_data["rescode"] == 5256 %}
+                            <div class="status-text"><p style="font-size: 10px;
+	                                                    font-weight: bold;
+	                                                    margin: 0;
+	                                                    text-transform: uppercase;
+                                                        color: #00a65a!important;" class="success">Success</p></div>
+                            {% elif seller_data["rescode"] == 5255 %}
+                            <div class="status-text"><p style="font-size: 10px;
+	                                                    font-weight: bold;
+	                                                    margin: 0;
+	                                                    text-transform: uppercase;
+                                                        color: #f39c12!important;" class="warning">Warning</p></div>
+                            {% elif seller_data["rescode"] > 0 %}
+                            <div class="status-text"><p style="font-size: 10px;
+	                                                    font-weight: bold;
+	                                                    margin: 0;
+	                                                    text-transform: uppercase;
+                                                        color: #ff0000!important;" class="error">Error</p></div>
+                            {% endif %}
+                        </td>
+                        {% else %}
+                        <td style="border-right: 1px solid #ddd; text-align: center;padding: 8px"><span>--</span>
+                            {% if seller_data["rescode"] == 5256 %}
+                            <div class="status-text"><p style="font-size: 10px;
+	                                                    font-weight: bold;
+	                                                    margin: 0;
+	                                                    text-transform: uppercase;
+                                                        color: #00a65a!important;" class="success">Success</p></div>
+                            {% elif seller_data["rescode"] == 5255 %}
+                            <div class="status-text"><p style="font-size: 10px;
+	                                                    font-weight: bold;
+	                                                    margin: 0;
+	                                                    text-transform: uppercase;
+                                                        color: #f39c12!important;" class="warning">Warning</p></div>
+                            {% elif seller_data["rescode"] > 0 %}
+                            <div class="status-text"><p style="font-size: 10px;
+	                                                    font-weight: bold;
+	                                                    margin: 0;
+	                                                    text-transform: uppercase;
+                                                        color: #ff0000!important;" class="error">Error</p></div>
+                            {% endif %}
+                        </td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+                    {% for option_name in product_data["all_opts"] %}
+                    <tr style="border-bottom: 1px solid #ddd;" class="row-data">
+                        <td style="border-right: 1px solid #ddd; text-align: center;padding: 8px" class="row-title"><b>{{ option_name }}</b></td>
+                        {% for seller_name in view_data.all_sellers %}
+                            {% set seller_data = product_data["sellers"][seller_name] %}
+                            {% if seller_data["options"].get(option_name) %}
+                                {% if seller_data["options"][option_name]["result"] %}
+                                <td style="border-right: 1px solid #ddd; text-align: center;padding: 8px"><span>{{ seller_data["options"][option_name]["result"] }}</span>
+                                    {% if seller_data["options"][option_name]["rescode"] == 5256 %}
+                                    <div class="status-text"><p style="font-size: 10px;
+	                                                            font-weight: bold;
+	                                                            margin: 0;
+	                                                            text-transform: uppercase;
+                                                                color: #00a65a!important;" class="success">Success</p></div>
+                                    {% elif seller_data["options"][option_name]["rescode"] == 5255 %}
+                                    <div class="status-text"><p style="font-size: 10px;
+	                                                            font-weight: bold;
+	                                                            margin: 0;
+	                                                            text-transform: uppercase;
+                                                                color: #f39c12!important;" class="warning">Warning</p></div>
+                                    {% elif seller_data["options"][option_name]["rescode"] > 0 %}
+                                    <div class="status-text"><p style="font-size: 10px;
+	                                                            font-weight: bold;
+	                                                            margin: 0;
+	                                                            text-transform: uppercase;
+                                                                color: #ff0000!important;" class="error">Error</p></div>
+                                    {% endif %}
+                                </td>
+                                {% else %}
+                                <td style="border-right: 1px solid #ddd; text-align: center;padding: 8px"><span>--</span>
+                                    {% if seller_data["options"][option_name]["rescode"] == 5256 %}
+                                    <div class="status-text"><p style="font-size: 10px;
+	                                                            font-weight: bold;
+	                                                            margin: 0;
+	                                                            text-transform: uppercase;
+                                                                color: #00a65a!important;" class="success">Success</p></div>
+                                    {% elif seller_data["options"][option_name]["rescode"] == 5255 %}
+                                    <div class="status-text"><p style="font-size: 10px;
+	                                                            font-weight: bold;
+	                                                            margin: 0;
+	                                                            text-transform: uppercase;
+                                                                color: #f39c12!important;" class="warning">Warning</p></div>
+                                    {% elif seller_data["options"][option_name]["rescode"] > 0 %}
+                                    <div class="status-text"><p style="font-size: 10px;
+	                                                            font-weight: bold;
+	                                                            margin: 0;
+	                                                            text-transform: uppercase;
+                                                                color: #ff0000!important;" class="error">Error</p></div>
+                                    {% endif %}
+                                </td>
+                                {% endif %}
+                            {% else %}
+                            <td style="border-right: 1px solid #ddd; text-align: center;padding: 8px"><span>--</span></td>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+        {% endfor %}
+        </tbody>
+    </table>
+    <div style="text-align: center;"><a href="{{report_ref}}">View detailed report</a></div>
+</div>

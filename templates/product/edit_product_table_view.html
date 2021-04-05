@@ -20,7 +20,7 @@
             <thead>
             <tr>
                 <th>Option</th>
-                <th>Option Value</th>
+                <th>Action</th>
             </tr>
             </thead>
             <tbody>
@@ -39,7 +39,7 @@
             {% endfor %}
             <tr>
                 <td><input class="form-control" type="text" id="option_new_name"></td>
-                <td><a class="add btn btn-app" onclick="add_row();"><i class="fa fa-plus"></i>Add</a></td>
+                <td><a class="add btn btn-app" onclick="add_row(edit_row, save_row);"><i class="fa fa-plus"></i>Add</a></td>
             </tr>
             </tbody>
             </table>

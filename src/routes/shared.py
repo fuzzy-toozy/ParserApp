@@ -80,7 +80,7 @@ class BreadcrumbsGenerator:
         if last_id == ENTS.PROJECTS:
             return bc_result
 
-        with session_scope(user_name) as session:
+        with session_scope() as session:
 
             if project_id:
                 current_project = session.query(Project).filter(Project.id == project_id).first()

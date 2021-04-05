@@ -1,5 +1,6 @@
 ol.breadcrumb {
     background-color: transparent;
+    margin-bottom: 0;
 }
 
 ol.breadcrumb a {
@@ -12,6 +13,28 @@ ol.breadcrumb a {
 
 .breadcrumb > li + li:before {
     color: #ccc;
-    content: "卐 ";
+    content: "> ";
     padding: 0 5px;
 }
+
+a.btn-app {
+    margin: 3px;
+}
+
+@font-face {
+font-family: 'Diablo Heavy';
+font-style: normal;
+font-weight: normal;
+src: local('Diablo Heavy'), url("/static/styles/diablo.woff") format('woff');
+}
+
+.footer {
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 20px;
+  color: gray;
+  text-align: center;
+  font-family: "Diablo Heavy", cursive;
+}
+
+

@@ -50,7 +50,7 @@ def validate_parser(parser_file, parser_name, parsers_dir):
 @login_required
 def parsers_view(project_id):
     bc_data = bc_generator.get_breadcrumbs_data(current_user.username, project_id, ENTS.PARSERS)
-    with session_scope(current_user.username, True) as session:
+    with session_scope(True) as session:
         current_sellers = session.query(Parser).filter(Parser.project_id == int(project_id)).all()
 
     new_entity_url = flask.url_for('parsers.edit_parser', project_id=project_id, entity_id='new_entity')
@@ -86,7 +86,7 @@ def edit_parser(project_id, entity_id):
         if entity_id == "new_entity":
             bc_operation = ENTS.CREATE_PARSER
         else:
-            with session_scope(current_user.username, True) as session:
+            with session_scope(True) as session:
                 current_parser = session.query(Parser).filter(Parser.id == int(entity_id)).first()
             parser_name = current_parser.name
             bc_operation = ENTS.EDIT_PARSER
@@ -119,7 +119,7 @@ def edit_parser(project_id, entity_id):
         else:
             parser_code = None
 
-        with session_scope(current_user.username) as session:
+        with session_scope() as session:
             if entity_id == 'new_entity':
                 session.add(Parser(name=parser_name, code=parser_code, project_id=int(project_id)))
             else:
@@ -140,7 +140,7 @@ def delete_parser():
     print(request_js)
     parser_id = request_js['id']
     project_id = request_js['project_id']
-    with session_scope(current_user.username) as session:
+    with session_scope() as session:
         session.query(Parser).filter(Parser.id == parser_id).delete()
     return flask.redirect(flask.url_for("parsers.parsers_view", project_id=project_id))
 
@@ -151,7 +151,7 @@ def test_parser(project_id, parser_id):
     parser_url = flask.request.form.get('parser_url')
     parser_parameter = flask.request.form.get('parser_parameter')
 
-    with session_scope(current_user.username, True) as session:
+    with session_scope(True) as session:
         current_parser = session.query(Parser).filter(and_(Parser.id == parser_id, Parser.project_id == project_id)).first()
 
     parser_exec_ok = False
@@ -176,6 +176,7 @@ def test_parser(project_id, parser_id):
     elif decode_failure:
         pass
     else:
+        label_message = "Parser is invalid"
         parser_result = "No parser code supplied"
 
     return flask.render_template("parser/test_parser.html", current_user=current_user,
@@ -191,7 +192,7 @@ def test_parser(project_id, parser_id):
 @parsers.route("/test_parser_view/<project_id>/<parser_id>", methods=['GET'])
 @login_required
 def test_parser_view(project_id, parser_id):
-    with session_scope(current_user.username, True) as session:
+    with session_scope(True) as session:
         current_parser = session.query(Parser).filter(and_(Parser.id == parser_id, Parser.project_id == project_id)).first()
     if current_parser and current_parser.code:
         parser_code = current_parser.code

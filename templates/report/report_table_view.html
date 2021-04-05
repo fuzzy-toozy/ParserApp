@@ -1,3 +1,26 @@
+{% if view_data %}
+<div class="row">
+    <div class="col-xs-12 col-sm-6 col-md-6 col-lg-4">
+        <div class="box box-primary">
+            <div class="box-body">
+                <ul class="nav nav-stacked">
+                    <li><a>Success <span class="pull-right badge bg-green">{{view_data["total_success"]}}</span></a></li>
+                    <li><a>Warning <span class="pull-right badge bg-yellow">{{view_data["total_warn"]}}</span></a></li>
+                    <li><a>Error <span class="pull-right badge bg-red">{{view_data["total_error"]}}</span></a></li>
+                    <li><a>Last scan time <span class="pull-right">{{view_data["scan_time"]}}</span></a></li>
+                 </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="reports_row" class="row">
+    {% block reports_state %}
+        {% include 'report/reports_state.html' %}
+    {% endblock %}
+</div>
+{% endif %}
+
 <div class="row">
     <div class="col-xs-12">
         <div class="box box-primary">
@@ -6,7 +29,7 @@
             NO ENTITIES CREATED
         {% else %}
         <div style="overflow-x: auto;">
-            <table id="report_data" class="table table-bordered text-center" width="100%">
+            <table id="report_data" class="table table-bordered text-center table_report_data" width="100%">
                 <tbody id="report_view_tbody">
                 </tbody>
             </table>

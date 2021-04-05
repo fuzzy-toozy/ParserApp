@@ -1,0 +1,188 @@
+{% extends 'base_site.html' %}
+{% block title %}
+Profile Settings
+{% endblock title%}
+{% block navigation_bar %}
+    <li>
+        <a class="btn btn-app" onclick="get_back('{{ url_for('projects.main_form') }}')"><i class="fa fa-close"></i>Cancel</a>
+    </li>
+    <li>
+        <a onclick="save_user_profile('{{ save_url }}', '{{ redirect_url }}')" class="btn btn-app" ><i class="fa fa-save"></i>Save</a>
+    </li>
+{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div id="profile-box" class="box box-primary">
+            <div class="box-body">
+            <form id="profile-settings-form" method="post" enctype="multipart/form-data" role="form">
+                <div id="profile_img_row" class="row">
+                    <div class="col-xs-12">
+                        <div class="form-group">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <label id="profileImageLabel" for="profile-container">Profile Image:</label>
+                            <div id="profile-container">
+                                <image id="profileImage" src="{{ avatar_url }}" />
+                            </div>
+
+                            <input id="imageUpload" type="file"
+                                name="profile_photo" placeholder="Photo" required="" capture>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 5px;" class="col-xs-12">
+                        <button style="width: 150px" type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
+                            Change password
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label id="user-name-label" for="user-name-form">Name:</label>
+                    <input class="form-control" id="user-name-form" name="username" type="text" value="{{ current_user.username }}">
+                </div>
+            </form>
+            <table style="margin-top: 1em", id="options_data_table" class="table table-bordered table-striped text-center">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% set trow_idx = 1 %}
+                {% for email in user_emails %}
+                <tr id="option_table_row{{loop.index}}" value="{{email.id}}">
+                <td id="option_name_row{{loop.index}}" value="{{email.email}}">{{ email.email }}</td>
+                <td>
+                    <a id="option_edit_button{{loop.index}}" class="btn btn-app" name="{{ email.id  }}" onclick="edit_row_wrap({{loop.index}})"
+                    ><i class="fa fa-cogs"></i>Edit</a>
+                    <a id="option_save_button{{loop.index}}" class="btn btn-app hidden" name="{{ email.id  }}" onclick="save_row_wrap({{loop.index}})"
+                    ><i class="fa fa-cogs"></i>Save</a>
+                    <a class="btn btn-app" name="{{ email.id }}" onclick="delete_row({{loop.index}})"
+                    ><i class="fa fa-cogs"></i>Delete</a>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td>
+                        <form id="new_mail_form" role="form">
+                            <div class="form-group">
+                                <input spellcheck="false" class="form-control" type="email" id="option_new_name">
+                            </div>
+                        </form>
+                    </td>
+                    <td><a class="add btn btn-app" onclick="add_row_valid();"><i class="fa fa-plus"></i>Add</a></td>
+                </tr>
+                </tbody>
+            </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="box box-primary">
+            <div class="box-body">
+                <form id="smtp_settings" method="post" action="{{ url_for('settings.test_smtp_connection') }}" role="form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <div class="row">
+                        <div class="form-group col-md-3">
+                            <label for="smtp_port">SMTP server port:</label>
+                            <input name="port" autocomplete="new-password" spellcheck="false" class="form-control" type="number" min="1" max="65535" id="smtp_port">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="smtp_addr">SMTP server address:</label>
+                        <input name="address" autocomplete="false" spellcheck="false" class="form-control" type="text" id="smtp_addr">
+                    </div>
+                    <div class="form-group">
+                        <label for="smtp_login">SMTP mailbox:</label>
+                        <input name="mailbox" autocomplete="false" spellcheck="false" class="form-control" type="text" id="smtp_login">
+                    </div>
+                    <div class="form-group">
+                        <label for="smtp_pwd">SMTP mailbox password:</label>
+                        <input name="password" autocomplete="new-password" spellcheck="false" class="form-control" type="password" id="smtp_pwd">
+                        <label for="smtp_pwd">Show:</label>
+                        <input id="show_pwd" onclick="pwd_toggle(['smtp_pwd'])" type="checkbox">
+                    </div>
+                </form>
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-12 col-lg-12 col-md-12">
+                            <div style="height: 25px; text-align: left;">
+                                <a width="100%" id="connection_check" style="display: none"></a>
+                                <span id="conn_err_msg_txt"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-6">
+                            <button style="min-width: 150px;" type="button" class="btn btn-block btn-primary" onclick="check_smtp_connection()">Check connection</button>
+                        </div>
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Edit Password</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <form id="password_first" role="form">
+                                <div class="form-group">
+                                    <label for="password_text1">Password:</label>
+                                    <input autocomplete="new-password" spellcheck="false" class="form-control" type="password" id="password_text1">
+                                </div>
+                            </form>
+                            <form id="password_second" role="form">
+                                <div class="form-group">
+                                    <label for="password_text2">Confirm Password:</label>
+                                    <input autocomplete="new-password" spellcheck="false" class="form-control" type="password" id="password_text2">
+                                    <label for="show_usr_pwd">Show:</label>
+                                    <input id="show_usr_pwd" onclick="pwd_toggle(['password_text1', 'password_text2'])" type="checkbox">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            <div class="modal-footer">
+                <div id="modal_bot" class="row">
+                    <div class="col-xs-12 col-sm-12 col-lg-12 col-md-12">
+                        <div style="height: 30px; text-align: left;">
+                            <a width="100%" id="pwd_check" style="display: none"></a>
+                            <span id="err_msg_txt"></span>
+                        </div>
+                    </div>
+                </div>
+                    <div class="row">
+                    <div class="col-xs-12 col-sm-12 col-lg-12 col-md-12">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary"  onclick="save_password('{{ save_pwd_url }}')">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block javascripts %}
+    <script src="/static/libs/validator.min.js"></script>
+    <script src="/static/js/product_table_callbacks.js"></script>
+    <script src="/static/js/profile_settings.js"></script>
+    <script>
+{% if smtp_settings %}
+let smtp_settings = {{smtp_settings | tojson | safe}}
+{% else %}
+smtp_settings = false;
+{% endif %}
+    </script>
+{% endblock %}
+{% block stylesheets %}
+<link rel="stylesheet" href="/static/styles/profile_image.css">
+{% endblock %}

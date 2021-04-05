@@ -3,6 +3,58 @@ function on_list_click(list_id) {
   dropdn_list.classList.add("show");
 }
 
+$(document).ready(function() {
+    $(".searchable_dropdown_seller").select2({
+        placeholder: "Select seller",
+    });
+
+    $(".searchable_dropdown_product").select2({
+        placeholder: "Select product",
+    });
+
+    $(".common_dropdown_scan_interval").select2({
+        minimumResultsForSearch: -1
+    });
+
+    $(".common_dropdown_request_interval").select2({
+        minimumResultsForSearch: -1
+    });
+
+    let $mon_sellers_select = $("#monitoring_sellers_select");
+    $mon_sellers_select.select2({
+        placeholder: "Add seller",
+    });
+    let seller_change_fired = false;
+    $mon_sellers_select.on("change", function() {
+        if (! seller_change_fired) {
+            seller_change_fired = true;
+            let $selected = $(this).find(":selected");
+            on_list_element_click_dt("seller", null, $selected.val(), $selected.text());
+            $(this).val(null).trigger("change");
+        } else {
+            seller_change_fired = false;
+        }
+    });
+
+    let $mon_products_select = $("#monitoring_products_select");
+    $mon_products_select.select2({
+        placeholder: "Add product",
+    });
+    let product_change_fired = false;
+    $mon_products_select.on("change", function() {
+        if (! product_change_fired) {
+            product_change_fired = true;
+            let $selected = $(this).find(':selected');
+            on_list_element_click_dt("product", null, $selected.val(), $selected.text());
+            $(this).val(null).trigger("change");
+        } else {
+            product_change_fired = false;
+        }
+    });
+
+});
+
+
 function on_list_element_click(entity_name, element, entity_id, entity_name_concrete) {
     var dropdowns = document.getElementById(entity_name + "_list_view");
     if (document.getElementById(entity_name + "_tablerow_" + entity_id)) {
@@ -22,15 +74,14 @@ function on_list_element_click(entity_name, element, entity_id, entity_name_conc
     dropdowns.classList.remove('show');
 }
 
+let added_entities = { "product": added_products, "seller": added_sellers };
 function on_list_element_click_dt(entity_name, element, entity_id, entity_name_concrete) {
-
-    var dropdowns = document.getElementById(entity_name + "_list_view");
-
-    if (document.getElementById(entity_name + "_tablerow_" + entity_id)) {
-        dropdowns.classList.remove('show');
+    let added = added_entities[entity_name];
+    if (! added.hasOwnProperty(entity_id) ) {
+        added[entity_id] = entity_name_concrete;
+    } else {
         return;
     }
-
     var table_id = "#chosen_" + entity_name + "s_table";
     var table = $(table_id).DataTable();
 
@@ -47,30 +98,19 @@ function on_list_element_click_dt(entity_name, element, entity_id, entity_name_c
 
     var column_2 = document.createElement("td");
     column_2.id = "remove_" + entity_name + rowCount;
-    column_2.onclick = function () { table.row(row_element).remove().draw(false); };
+    column_2.onclick = remove_from_table.bind(table, row_element);
     column_2.classList.add("remove_chosen");
 
     row_element.appendChild(column_1);
     row_element.appendChild(column_2);
 
     table.row.add(row_element).draw(false);
-
-    dropdowns.classList.remove('show');
 }
 
 function setup_table_text_maxlength() {
     var seller_table_cols = document.querySelectorAll('*[id^="seller_name"]');
     for (let i = 0; i < seller_table_cols.length; ++i) {
-        setup_text_maxlength(seller_table_cols[i].id);
-    }
-}
-
-window.onclick = function(event) {
-    if (! event.target.matches('.dropbtn')) {
-        var dropdowns1 = document.getElementById("product_list_view");
-        var dropdowns2 = document.getElementById("seller_list_view");
-        dropdowns1.classList.remove('show');
-        dropdowns2.classList.remove('show');
+        added_entities[setup_text_maxlength(seller_table_cols[i].id)];
     }
 }
 
@@ -87,10 +127,15 @@ function remove_first_opt(clicked) {
     console.log(clicked)
 }
 
+function remove_from_table(table_row_el) {
+    this.row(table_row_el).remove().draw(false);
+    delete added_entities[$(table_row_el.cells[0]).attr("id").split("_")[0]][Number($(table_row_el).attr("value"))];
+}
+
 function setup_remove_buttons(table) {
     var table_rows = table.rows().nodes();
     for(let idx = 0; idx < table_rows.length; idx++) {
-        table_rows[idx].cells[1].onclick = function () { table.row(table_rows[idx]).remove().draw(false); };
+        table_rows[idx].cells[1].onclick = remove_from_table.bind(table, table_rows[idx]);
     }
 }
 
